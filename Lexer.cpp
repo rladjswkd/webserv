@@ -1,4 +1,5 @@
 #include "Lexer.hpp"
+#include <stdexcept>
 
 Lexer::Lexer(const char *filePath) : FILEPATH(filePath)
 {
