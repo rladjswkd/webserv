@@ -2,7 +2,7 @@
 # define LEXER_H
 
 # include <set>
-# include <vector>
+# include <list>
 # include <string>
 # include <fstream>
 
@@ -14,7 +14,7 @@ class Lexer
 public:
 	typedef const std::string	FilePath;
 	typedef std::string			Token, Delimiter, Word;
-	typedef std::vector<Token>	Tokens;
+	typedef std::list<Token>	Tokens;
 	typedef std::ifstream		ConfigFile;
 
 private:
