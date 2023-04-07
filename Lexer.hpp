@@ -1,35 +1,46 @@
 #ifndef LEXER_H
 # define LEXER_H
 
-# include <set>
 # include <list>
+# include <map>
 # include <string>
 # include <fstream>
+# include "Lexeme.hpp"
+# include "Token.hpp"
 
-# define FILEPATH_EXCEPT_MSG	"Invalid File Path!"
 # define DEFALUT_FILEPATH		"./default"
+
+# define FILEPATH_EXCEPT_MSG	"INVALID FILE PATH!"
 
 class Lexer
 {
 public:
-	typedef const std::string	FilePath;
-	typedef std::string			Token, Delimiter, Word;
-	typedef std::list<Token>	Tokens;
-	typedef std::ifstream		ConfigFile;
+	typedef const std::string				FilePath;
+	typedef std::string						Delimiter, Lexeme;
+	typedef int								TokenType;
+	typedef std::pair<TokenType, Lexeme>	Token;
+	typedef std::list<Token>				Tokens;
+	typedef std::map<Lexeme, TokenType>		Syntax;
+	typedef std::ifstream					ConfigFile;
+
+private:	// constants
+	FilePath			FILEPATH;
+	Delimiter			WHITESPACES = " \n\t\r\f\v";
+	Delimiter			BRACKET_SEMICOLON = "{};";
 
 private:
-	ConfigFile	configFile;
-
-	FilePath	FILEPATH;
-	Delimiter	WHITESPACES = " \n\t\r\f\v";
-	Delimiter	BRACKET_SEMICOLON = "{};";
+	ConfigFile			configFile;
 
 private:
-	void    addToken(Tokens &tokens, Token token, Token delimiter);
-	void	processToken(Tokens &tokens);
-	bool	isNotDelimiter(char c);
-	bool	isWhiteSpaces(char c);
-	bool	isBracketOrSemicolon(Delimiter delimiter);
+	void		validateFileOpen();
+	bool		isNotDelimiter(char c);
+	bool		isWhiteSpaces(char c);
+	bool		isBracketOrSemicolon(Delimiter delimiter);
+	void		processToken(Tokens &tokens);
+	void    	addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter);
+	TokenType	evaluateLexeme(const Lexeme &lexeme);
+	Syntax		initializeSyntax();
+	TokenType	evaluateDelimiterLexeme(const Delimiter &delimiter);
 
 public:
 	Lexer(const char *filePath);
