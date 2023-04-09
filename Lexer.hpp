@@ -8,9 +8,11 @@
 # include "Lexeme.hpp"
 # include "Token.hpp"
 
-# define DEFALUT_FILEPATH		"./default"
+# define DEFALUT_FILEPATH			"./default"
+# define WHITESPACES_LITERAL		" \n\t\r\f\v"
+# define BRACKET_SEMICOLON_LITERAL	"{};"
 
-# define FILEPATH_EXCEPT_MSG	"INVALID FILE PATH!"
+# define FILEPATH_EXCEPT_MSG		"INVALID FILE PATH!"
 
 class Lexer
 {
@@ -25,8 +27,8 @@ public:
 
 private:	// constants
 	FilePath			FILEPATH;
-	Delimiter			WHITESPACES = " \n\t\r\f\v";
-	Delimiter			BRACKET_SEMICOLON = "{};";
+	Delimiter			WHITESPACES;
+	Delimiter			BRACKET_SEMICOLON;
 
 private:
 	ConfigFile			configFile;

@@ -1,7 +1,7 @@
 #include "Lexer.hpp"
 #include <stdexcept>
 
-Lexer::Lexer(const char *filePath) : FILEPATH(filePath)
+Lexer::Lexer(const char *filePath) : FILEPATH(filePath), WHITESPACES(WHITESPACES_LITERAL), BRACKET_SEMICOLON(BRACKET_SEMICOLON_LITERAL)
 {
 	configFile.open(FILEPATH.c_str());	
 }
