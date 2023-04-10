@@ -4,7 +4,7 @@
 // static members initialization
 const ConfigLexer::Delimiter	ConfigLexer::WHITESPACES = WHITESPACES_LITERAL;
 const ConfigLexer::Delimiter	ConfigLexer::BRACKET_SEMICOLON = BRACKET_SEMICOLON_LITERAL;
-ConfigLexer::ConfigFile		ConfigLexer::configFile;
+ConfigLexer::ConfigFile			ConfigLexer::configFile;
 
 bool ConfigLexer::isNotDelimiter(char c)
 {
@@ -55,34 +55,34 @@ ConfigLexer::TokenType ConfigLexer::evaluateLexeme(const Lexeme &lexeme)
 
 	if (pos != syntax.end())
 		return (pos->second);
-	return (TOK_ARGUMENT);
+	return (TOKEN_ARGUMENT);
 }
 
 ConfigLexer::Syntax	ConfigLexer::initializeSyntax()
 {
 	Syntax	syntax;
 
-	syntax[SERVER] = TOK_SERVER;
-	syntax[LOCATION] = TOK_LOCATION;
-	syntax[LISTEN] = TOK_DIRECTIVE_ONE_ARG;
-	syntax[SERVER_NAME] = TOK_DIRECTIVE_MUL_ARGS;
-	syntax[ERROR_PAGE] = TOK_DIRECTIVE_ERR_PAGE;
-	syntax[CLIENT_MAX_BODY_SIZE] = TOK_DIRECTIVE_ONE_ARG;
-	syntax[LIMIT_EXCEPT] = TOK_DIRECTIVE_MUL_ARGS;
-	syntax[REDIRECT] = TOK_DIRECTIVE_ONE_ARG;
-	syntax[ALIAS] = TOK_DIRECTIVE_ONE_ARG;
-	syntax[AUTOINDEX] = TOK_DIRECTIVE_ONE_ARG;
-	syntax[INDEX] = TOK_DIRECTIVE_MUL_ARGS;
+	syntax[SERVER] = TOKEN_SERVER;
+	syntax[LOCATION] = TOKEN_LOCATION;
+	syntax[LISTEN] = TOKEN_DIRECTIVE_ONE;
+	syntax[SERVER_NAME] = TOKEN_DIRECTIVE_MULT;
+	syntax[ERROR_PAGE] = TOKEN_DIRECTIVE_MULT;
+	syntax[CLIENT_MAX_BODY_SIZE] = TOKEN_DIRECTIVE_ONE;
+	syntax[LIMIT_EXCEPT] = TOKEN_DIRECTIVE_MULT;
+	syntax[REDIRECT] = TOKEN_DIRECTIVE_ONE;
+	syntax[ALIAS] = TOKEN_DIRECTIVE_ONE;
+	syntax[AUTOINDEX] = TOKEN_DIRECTIVE_ONE;
+	syntax[INDEX] = TOKEN_DIRECTIVE_MULT;
 	return (syntax);
 }
 
 ConfigLexer::TokenType ConfigLexer::evaluateDelimiterLexeme(const Delimiter &delimiter)
 {
 	if (delimiter == LEFT_BRACKET)
-		return (TOK_LBRACKET);
+		return (TOKEN_LBRACKET);
 	if (delimiter == RIGHT_BRACKET)
-		return (TOK_RBRACKET);
-	return (TOK_SEMICOLON);
+		return (TOKEN_RBRACKET);
+	return (TOKEN_SEMICOLON);
 }
 
 ConfigLexer::Tokens ConfigLexer::tokenize(const char *filePath)
