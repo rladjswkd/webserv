@@ -8,7 +8,6 @@
 # include "Lexeme.hpp"
 # include "Token.hpp"
 
-# define DEFALUT_FILEPATH			"./default"
 # define WHITESPACES_LITERAL		" \n\t\r\f\v"
 # define BRACKET_SEMICOLON_LITERAL	"{};"
 
@@ -17,7 +16,6 @@
 class Lexer
 {
 public:
-	typedef const std::string				FilePath;
 	typedef std::string						Delimiter, Lexeme;
 	typedef int								TokenType;
 	typedef std::pair<TokenType, Lexeme>	Token;
@@ -26,27 +24,26 @@ public:
 	typedef std::ifstream					ConfigFile;
 
 private:	// constants
-	FilePath			FILEPATH;
-	Delimiter			WHITESPACES;
-	Delimiter			BRACKET_SEMICOLON;
+	static const Delimiter	WHITESPACES;
+	static const Delimiter	BRACKET_SEMICOLON;
 
 private:
-	ConfigFile			configFile;
+	static ConfigFile	configFile;
 
 private:
-	void		validateFileOpen();
-	bool		isNotDelimiter(char c);
-	bool		isWhiteSpaces(char c);
-	bool		isBracketOrSemicolon(Delimiter delimiter);
-	void		processToken(Tokens &tokens);
-	void    	addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter);
-	TokenType	evaluateLexeme(const Lexeme &lexeme);
-	Syntax		initializeSyntax();
-	TokenType	evaluateDelimiterLexeme(const Delimiter &delimiter);
+	Lexer();
+
+	static bool			isNotDelimiter(char c);
+	static bool			isWhiteSpaces(char c);
+	static bool			isBracketOrSemicolon(Delimiter delimiter);
+	static void			processToken(Tokens &tokens);
+	static void    		addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter);
+	static TokenType	evaluateLexeme(const Lexeme &lexeme);
+	static Syntax		initializeSyntax();
+	static TokenType	evaluateDelimiterLexeme(const Delimiter &delimiter);
 
 public:
-	Lexer(const char *filePath);
-	Tokens	tokenize();
+	static Tokens		tokenize(const char *filePath);
 };
 
 #endif

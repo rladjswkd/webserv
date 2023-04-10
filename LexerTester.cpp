@@ -21,11 +21,11 @@ std::string getTokenName(int tok)
         case 16:
             return (colorRed("SEMICOLON"));
         case 32:
-            return (colorRed("ONE"));
+            return (colorRed("ONE_ARGUMENT_DIRECTIVE"));
         case 64:
-            return (colorRed("MULTIPLE"));        
+            return (colorRed("MULTIPLE_ARGUMENTS_DIRECTIVE"));        
         case 128:
-            return (colorRed("ERRORPAGE"));
+            return (colorRed("ERROR_PAGE"));
         case 256:
             return (colorRed("ARGUMENT"));
     }
@@ -33,7 +33,7 @@ std::string getTokenName(int tok)
 }
 int main()
 {
-    Lexer::Tokens tok = Lexer("./example").tokenize();
+    Lexer::Tokens tok = Lexer::tokenize("./example");
     for (std::list<std::pair< int, std::string> >::iterator it = tok.begin(); it != tok.end(); it++)
         std::cout << getTokenName(it->first) << " " << it->second << std::endl;
         // std::cout << it->first << " " << it->second << std::endl;

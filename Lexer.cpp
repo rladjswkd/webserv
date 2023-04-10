@@ -1,16 +1,10 @@
 #include "Lexer.hpp"
 #include <stdexcept>
 
-Lexer::Lexer(const char *filePath) : FILEPATH(filePath), WHITESPACES(WHITESPACES_LITERAL), BRACKET_SEMICOLON(BRACKET_SEMICOLON_LITERAL)
-{
-	configFile.open(FILEPATH.c_str());	
-}
-
-void Lexer::validateFileOpen()
-{
-	if (!configFile.good())
-		throw (std::invalid_argument(FILEPATH_EXCEPT_MSG));
-}
+// static members initialization
+const Lexer::Delimiter	Lexer::WHITESPACES = WHITESPACES_LITERAL;
+const Lexer::Delimiter	Lexer::BRACKET_SEMICOLON = BRACKET_SEMICOLON_LITERAL;
+Lexer::ConfigFile		Lexer::configFile;
 
 bool Lexer::isNotDelimiter(char c)
 {
@@ -91,11 +85,13 @@ Lexer::TokenType Lexer::evaluateDelimiterLexeme(const Delimiter &delimiter)
 	return (TOK_SEMICOLON);
 }
 
-Lexer::Tokens Lexer::tokenize()
+Lexer::Tokens Lexer::tokenize(const char *filePath)
 {
 	Tokens	tokens;
 
-	validateFileOpen();
+	configFile.open(filePath);
+	if (!configFile.good())
+		throw (std::invalid_argument(FILEPATH_EXCEPT_MSG));
 	while (!configFile.eof())
 		processToken(tokens);
 	configFile.close();
