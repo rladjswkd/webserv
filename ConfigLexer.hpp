@@ -5,8 +5,8 @@
 # include <map>
 # include <string>
 # include <fstream>
-# include "Lexeme.hpp"
-# include "Token.hpp"
+# include "ConfigLexeme.hpp"
+# include "ConfigToken.hpp"
 
 # define WHITESPACES_LITERAL		" \n\t\r\f\v"
 # define BRACKET_SEMICOLON_LITERAL	"{};"
