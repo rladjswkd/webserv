@@ -17,7 +17,7 @@ class ConfigLexer
 {
 public:
 	typedef std::string						Delimiter, Lexeme;
-	typedef int								TokenType;
+	typedef unsigned int					TokenType;
 	typedef std::pair<TokenType, Lexeme>	Token;
 	typedef std::list<Token>				Tokens;
 	typedef std::map<Lexeme, TokenType>		Syntax;
