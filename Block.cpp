@@ -1,26 +1,26 @@
 #include "Block.hpp"
 
-void BaseBlock::setErrorPage(Directive directive)
+void BaseBlock::setErrorPage(ArgumentList list)
 {
-	errorPage = directive;
+	errorPage = list;
 }
 
-void BaseBlock::setClientMaxBodySize(Directive directive)
+void BaseBlock::setClientMaxBodySize(Argument arg)
 {
-	clientMaxBodySize = directive;
+	clientMaxBodySize = arg;
 }
 
-void BaseBlock::setAutoIndex(Directive directive)
+void BaseBlock::setAutoIndex(Argument arg)
 {
-	autoIndex = directive;
+	autoIndex = arg;
 }
 
-void BaseBlock::setIndex(Directive directive)
+void BaseBlock::setIndex(ArgumentList list)
 {
-	index = directive;
+	index = list;
 }
 
-void InterBlock::setRedirect(Directive directive)
+void InterBlock::setRedirect(ArgumentList list)
 {
-	redirect = directive;
+	redirect = list;
 }

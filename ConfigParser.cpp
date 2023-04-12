@@ -9,9 +9,10 @@
 Config ConfigParser::parse(const Tokens &tokens)
 {
 	Config			config;
+	const_iterator	cIt = tokens.begin();
 	const_iterator	cItEnd = tokens.end();
 
-	for (const_iterator cIt = tokens.begin(); cIt != cItEnd; cIt++)
+	while (cIt != cItEnd)
 		parseCurrentToken(config, cIt, cItEnd);
 	return (config);
 }
@@ -59,35 +60,35 @@ void ConfigParser::parseCurrentToken(Config &config, const_iterator &cIt, const_
 	throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 }
 
-ConfigParser::Arguments ConfigParser::parseDirectiveOne(const_iterator &cIt)
+ConfigParser::Argument ConfigParser::parseDirectiveOne(const_iterator &cIt)
 {
-	Arguments	args;
+	Argument	arg;
 
 	if (cIt->first & TOKEN_ARGUMENT)
-		args.push_back((cIt++)->second);
-	if (args.size() != 1 || (cIt++)->first != TOKEN_SEMICOLON)
+		arg.append((cIt++)->second);
+	if (arg.empty() || (cIt++)->first != TOKEN_SEMICOLON)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	return (args);
+	return (arg);
 }
 
-ConfigParser::Arguments ConfigParser::parseDirectiveMult(const_iterator &cIt)
+ConfigParser::ArgumentList ConfigParser::parseDirectiveMult(const_iterator &cIt)
 {
-	Arguments	args;
+	ArgumentList	list;
 
 	while (cIt->first & TOKEN_ARGUMENT)
-		args.push_back((cIt++)->second);
-	if (args.empty() || (cIt++)->first != TOKEN_SEMICOLON)
+		list.push_back((cIt++)->second);
+	if (list.empty() || (cIt++)->first != TOKEN_SEMICOLON)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	return (args);
+	return (list);
 }
 
 void ConfigParser::parseServer(Config &config, const_iterator &cIt, const_iterator &cItEnd)
 {
 	ConfigServer	server;
 
-	if (cIt->first != TOKEN_LBRACKET)
+	if ((cIt++)->first != TOKEN_LBRACKET)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	for (; cIt->first != TOKEN_RBRACKET && cIt != cItEnd; cIt++)
+	while (cIt->first != TOKEN_RBRACKET && cIt != cItEnd)
 		parseServerCurrentToken(server, cIt, cItEnd);
 	if (cIt == cItEnd)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
@@ -100,21 +101,21 @@ void ConfigParser::parseServerCurrentToken(ConfigServer &server, const_iterator 
 	switch (cIt->first)
 	{
 		case TOKEN_LOCATION:
-			return (parseLocation(server, cIt, cItEnd));
+			return (parseLocation(server, ++cIt, cItEnd));
 		case TOKEN_SERVER_NAME:
-			return (parseServerName(server, cIt));
+			return (parseServerName(server, ++cIt));
 		case TOKEN_LISTEN:
-			return (parseListen(server, cIt));
+			return (parseListen(server, ++cIt));
 		case TOKEN_REDIRECT:
-			return (parseRedirect(server, cIt));
+			return (parseRedirect(server, ++cIt));
 		case TOKEN_ERROR_PAGE:
-			return (parseErrorPage(server, cIt));
+			return (parseErrorPage(server, ++cIt));
 		case TOKEN_CLIENT_MAX_BODY_SIZE:
-			return (parseClientMaxBodySize(server, cIt));
+			return (parseClientMaxBodySize(server, ++cIt));
 		case TOKEN_AUTOINDEX:
-			return (parseAutoIndex(server, cIt));
+			return (parseAutoIndex(server, ++cIt));
 		case TOKEN_INDEX:
-			return (parseIndex(server, cIt));
+			return (parseIndex(server, ++cIt));
 	}
 	throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 }
@@ -124,10 +125,11 @@ void ConfigParser::parseLocation(ConfigServer &server, const_iterator &cIt, cons
 	ConfigLocation	location;
 	Route			route;
 	
-	route = parseDirectiveOne(cIt)[0];
-	if ((cIt++)->first != TOKEN_LBRACKET)
+	if (cIt->first & TOKEN_ARGUMENT)
+		route.append((cIt++)->second);
+	if (route.empty() || (cIt++)->first != TOKEN_LBRACKET)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	for (; cIt->first != TOKEN_RBRACKET && cIt != cItEnd; cIt++)
+	while (cIt->first != TOKEN_RBRACKET && cIt != cItEnd)
 		parseLocationCurrentToken(location, cIt);
 	if (cIt == cItEnd)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
@@ -140,19 +142,19 @@ void ConfigParser::parseLocationCurrentToken(ConfigLocation &location, const_ite
 	switch (cIt->first)
 	{
 		case TOKEN_ERROR_PAGE:
-			return (parseErrorPage(location, cIt));
+			return (parseErrorPage(location, ++cIt));
 		case TOKEN_CLIENT_MAX_BODY_SIZE:
-			return (parseClientMaxBodySize(location, cIt));
+			return (parseClientMaxBodySize(location, ++cIt));
 		case TOKEN_LIMIT_EXCEPT:
-			return (parseLimitExcept(location, cIt));
+			return (parseLimitExcept(location, ++cIt));
 		case TOKEN_REDIRECT:
-			return (parseRedirect(location, cIt));
+			return (parseRedirect(location, ++cIt));
 		case TOKEN_AUTOINDEX:
-			return (parseAutoIndex(location, cIt));
+			return (parseAutoIndex(location, ++cIt));
 		case TOKEN_INDEX:
-			return (parseIndex(location, cIt));
+			return (parseIndex(location, ++cIt));
 		case TOKEN_ALIAS:
-			return (parseAlias(location, cIt));
+			return (parseAlias(location, ++cIt));
 	}
 	throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 }
@@ -166,30 +168,38 @@ void ConfigParser::parseServerName(ConfigServer &server, const_iterator &cIt)
 // https://www.ibm.com/docs/en/ztpf/2020?topic=overview-port-numbers
 void ConfigParser::parseListen(ConfigServer &server, const_iterator &cIt)
 {
-	Arguments			args = parseDirectiveOne(cIt);
-	std::stringstream	ss(args[0]);
+	std::stringstream	ss(parseDirectiveOne(cIt));
+	std::string			host;
+	std::string			port;
+
+	std::getline(ss, host, COLON);
+	checkHost(host);
+	std::getline(ss, port, COLON);
+	checkIfNumberBetween(convertToNumber(port), PORT_LOWER, PORT_UPPER);
+	server.setHostPort(host, port);
+}
+
+void ConfigParser::checkHost(Host host)
+{
+	std::stringstream	ss(host);
 	std::string			buf;
 	int					count = 0;
 
-	std::getline(ss, buf, COLON);
 	for (; std::getline(ss, buf, DOT); count++)
 		checkIfNumberBetween(convertToNumber(buf), OCTET_LOWER, OCTET_UPPER);
 	if (count != 4)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	std::getline(ss, buf, COLON);
-	checkIfNumberBetween(convertToNumber(buf), PORT_LOWER, PORT_UPPER);
-	server.setListen(args);
 }
 
 // nginx 기준 동일한 메소드가 여러 번 들어오는 걸 허용한다.
 // 사용할 때 std::set으로 만들어서 사용하자.
 void ConfigParser::parseLimitExcept(ConfigLocation &location, const_iterator &cIt)
 {
-	Arguments	args = parseDirectiveMult(cIt);
+	ArgumentList	list = parseDirectiveMult(cIt);
 	
-	for (Arguments::const_iterator cIt = args.begin(); cIt != args.end(); cIt++)
+	for (ArgumentList::const_iterator cIt = list.begin(); cIt != list.end(); cIt++)
 		checkLimitExcept(*cIt);
-	location.setLimitExcept(args);
+	location.setLimitExcept(list);
 }
 
 void ConfigParser::checkLimitExcept(const Argument &argument)
@@ -205,33 +215,33 @@ void ConfigParser::parseAlias(ConfigLocation &location, const_iterator &cIt)
 
 void ConfigParser::parseErrorPage(BaseBlock &block, const_iterator &cIt)
 {
-	Arguments					args = parseDirectiveMult(cIt);
-	Arguments::const_iterator	pageIt = --(args.end());
+	ArgumentList					list = parseDirectiveMult(cIt);
+	ArgumentList::const_iterator	pageIt = --(list.end());
 
-	if (args.size() < 2)
+	if (list.size() < 2)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	for (Arguments::const_iterator cIt = args.begin(); cIt != pageIt; cIt++)
+	for (ArgumentList::const_iterator cIt = list.begin(); cIt != pageIt; cIt++)
 		checkIfNumberBetween(convertToNumber(*cIt), STATUS_CODE_LOWER, STATUS_CODE_UPPER);
-	block.setErrorPage(args);
+	block.setErrorPage(list);
 }
 
 // std::stringstream으로 unsigned long long 타입에 값을 넣으면, 해당 타입의 범위를 넘은 값이 들어갈 경우 타입의 최대값을 넣는다.
 void ConfigParser::parseClientMaxBodySize(BaseBlock &block, const_iterator &cIt)
 {
-	Arguments	args = parseDirectiveOne(cIt);
+	Argument	arg = parseDirectiveOne(cIt);
 
-	if (convertToNumber(args[0]) > std::numeric_limits<unsigned int>::max())
+	if (convertToNumber(arg) > std::numeric_limits<unsigned int>::max())
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	block.setClientMaxBodySize(args);
+	block.setClientMaxBodySize(arg);
 }
 
 void ConfigParser::parseRedirect(InterBlock &block, const_iterator &cIt)
 {
-	Arguments	args = parseDirectiveOne(cIt);
+	ArgumentList	args = parseDirectiveMult(cIt);
 
 	if (args.size() < 2)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	checkIfNumberBetween(convertToNumber(args[0]), STATUS_CODE_LOWER, STATUS_CODE_UPPER);
+	checkIfNumberBetween(convertToNumber(args[0]), REDIRECT_LOWER, REDIRECT_UPPER);
 	if (args[1].find(HTTP) != 0 && args[1].find(HTTP_SECURE) != 0)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 	block.setRedirect(args);
@@ -239,12 +249,11 @@ void ConfigParser::parseRedirect(InterBlock &block, const_iterator &cIt)
 
 void ConfigParser::parseAutoIndex(BaseBlock &block, const_iterator &cIt)
 {
-	Arguments	args = parseDirectiveOne(cIt);
-	Argument	arg = args[0];
+	Argument	arg = parseDirectiveOne(cIt);
 
 	if (arg != AUTOINDEX_ON && arg != AUTOINDEX_OFF)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	block.setAutoIndex(args);
+	block.setAutoIndex(arg);
 }
 
 void ConfigParser::parseIndex(BaseBlock &block, const_iterator &cIt)

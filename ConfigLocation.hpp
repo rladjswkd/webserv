@@ -6,10 +6,11 @@
 class ConfigLocation : public InterBlock
 {
 private:
-	Directive	alias, limitExcept;
+	Argument		alias;
+	ArgumentList	limitExcept;
 	
 public:
-	void	setAlias(Directive directive);
-	void	setLimitExcept(Directive directive);
+	void	setAlias(Argument list);
+	void	setLimitExcept(ArgumentList list);
 };
 #endif

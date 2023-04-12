@@ -16,13 +16,13 @@
 class ConfigParser
 {
 public:
-	typedef ConfigLexer::Tokens				Tokens;
-	typedef ConfigLexer::TokenType			TokenType;
-	typedef Tokens::const_iterator			const_iterator;
-	typedef std::string						Keyword, Argument, NumericString, Route;
-	typedef std::vector<Argument>			Arguments;
-	typedef std::pair<Keyword, Arguments>	Directive;
-	typedef unsigned long long				Number;
+	typedef ConfigLexer::Tokens					Tokens;
+	typedef ConfigLexer::TokenType				TokenType;
+	typedef Tokens::const_iterator				const_iterator;
+	typedef std::string							Keyword, Argument, NumericString, Route, Host;
+	typedef std::vector<Argument>				ArgumentList;
+	typedef std::pair<Keyword, ArgumentList>	Directive;
+	typedef unsigned long long					Number;
 
 private:
 	ConfigParser();
@@ -31,8 +31,8 @@ private:
 	static void			checkIfNumber(const char &c);
 
 	static void			parseCurrentToken(Config &config, const_iterator &cIt, const_iterator &cItEnd);
-	static Arguments	parseDirectiveOne(const_iterator &cIt);
-	static Arguments	parseDirectiveMult(const_iterator &cIt);
+	static Argument		parseDirectiveOne(const_iterator &cIt);
+	static ArgumentList	parseDirectiveMult(const_iterator &cIt);
 
 	static void			parseServer(Config &config, const_iterator &cIt, const_iterator &cItEnd);
 	static void			parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd);
@@ -41,6 +41,7 @@ private:
 	
 	static void			parseServerName(ConfigServer &server, const_iterator &cIt);
 	static void			parseListen(ConfigServer &server, const_iterator &cIt);
+	static void			checkHost(Host host);
 	static void			parseLimitExcept(ConfigLocation &location, const_iterator &cIt);
 	static void			checkLimitExcept(const Argument &argument);
 	static void			parseAlias(ConfigLocation &location, const_iterator &cIt);

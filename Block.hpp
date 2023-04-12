@@ -9,27 +9,25 @@ class BaseBlock
 {
 public:
 	typedef std::string				Argument;
-	typedef std::vector<Argument>	Directive;
+	typedef std::vector<Argument>	ArgumentList;
 
 protected:
-	Directive	errorPage, clientMaxBodySize, autoIndex, index;
+	Argument		clientMaxBodySize, autoIndex;
+	ArgumentList	errorPage, index;
 
 public:
-	void	setErrorPage(Directive directive);
-	void	setClientMaxBodySize(Directive directive);
-	void	setAutoIndex(Directive directive);
-	void	setIndex(Directive directive);
+	void	setErrorPage(ArgumentList list);
+	void	setClientMaxBodySize(Argument arg);
+	void	setAutoIndex(Argument arg);
+	void	setIndex(ArgumentList list);
 };
 
 class InterBlock : public BaseBlock
 {
-public:
-	typedef BaseBlock::Directive	Directive;
-
 protected:
-	Directive	redirect;
+	ArgumentList	redirect;
 
 public:
-	void	setRedirect(Directive directive);
+	void	setRedirect(ArgumentList list);
 };
 #endif

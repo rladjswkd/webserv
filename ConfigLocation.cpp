@@ -1,11 +1,11 @@
 #include "ConfigLocation.hpp"
 
-void ConfigLocation::setAlias(Directive directive)
+void ConfigLocation::setAlias(Argument list)
 {
-	alias = directive;
+	alias = list;
 }
 
-void ConfigLocation::setLimitExcept(Directive directive)
+void ConfigLocation::setLimitExcept(ArgumentList list)
 {
-	limitExcept = directive;
+	limitExcept = list;
 }

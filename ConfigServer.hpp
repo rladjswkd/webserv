@@ -11,12 +11,16 @@ public:
 	typedef std::map<Route, ConfigLocation>	LocationMap;
 	
 private:
-	Directive		serverName, listen;
+	ArgumentList	serverName;
+	Argument		host, port;
 	LocationMap		locationMap;
 
 public:
-	void	setServerName(Directive directive);
-	void	setListen(Directive directive);
-	void	addConfigLocation(Route route, ConfigLocation configLocation);
+	void				setServerName(ArgumentList list);
+	const ArgumentList	getServerName();
+	void				setHostPort(Argument host, Argument port);
+	const Argument		getHost();
+	const Argument		getPort();
+	void				addConfigLocation(Route route, ConfigLocation configLocation);
 };
 #endif

@@ -7,13 +7,13 @@
 class Config : public BaseBlock
 {
 public:
-	typedef std::string							Host, Port, ServerName;
+	typedef const std::string					Host, Port, ServerName;
 	typedef std::pair<Host, Port>				SocketAddr;
 	typedef std::map<ServerName, ConfigServer>	ServerSubMap;
 	typedef std::map<SocketAddr, ServerSubMap>	ServerMap;
 
 private:
-	ServerMap	serverList;
+	ServerMap	serverMap;
 
 public:
 	void	addConfigServer(ConfigServer configServer);
