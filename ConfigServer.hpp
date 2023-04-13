@@ -17,10 +17,10 @@ private:
 
 public:
 	void				setServerName(ArgumentList list);
-	const ArgumentList	getServerName();
+	const ArgumentList	&getServerName();
 	void				setHostPort(Argument host, Argument port);
-	const Argument		getHost();
-	const Argument		getPort();
+	const Argument		&getHost();
+	const Argument		&getPort();
 	void				addConfigLocation(Route route, ConfigLocation configLocation);
 };
 #endif

@@ -5,17 +5,17 @@ void ConfigServer::setServerName(ArgumentList list)
 	serverName = list;
 }
 
-const ConfigServer::ArgumentList ConfigServer::getServerName()
+const ConfigServer::ArgumentList &ConfigServer::getServerName()
 {	
 	return (serverName);
 }
 
-const ConfigServer::Argument ConfigServer::getHost()
+const ConfigServer::Argument &ConfigServer::getHost()
 {
 	return (host);
 }
 
-const ConfigServer::Argument ConfigServer::getPort()
+const ConfigServer::Argument &ConfigServer::getPort()
 {
 	return (port);
 }
