@@ -1,15 +1,5 @@
 #include "ConfigServer.hpp"
 
-void ConfigServer::setServerName(ArgumentList list)
-{
-	serverName = list;
-}
-
-const ConfigServer::ArgumentList &ConfigServer::getServerName()
-{	
-	return (serverName);
-}
-
 const ConfigServer::Argument &ConfigServer::getHost()
 {
 	return (host);

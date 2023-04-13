@@ -30,6 +30,6 @@ private:
 	ServerMap	serverMap;
 
 public:
-	void	addConfigServer(ConfigServer configServer);
+	void	addConfigServer(ArgumentList &serverNames, ConfigServer configServer);
 };
 #endif

@@ -35,11 +35,11 @@ private:
 	static ArgumentList	parseDirectiveMult(const_iterator &cIt);
 
 	static void			parseServer(Config &config, const_iterator &cIt, const_iterator &cItEnd);
-	static void			parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd);
+	static void			parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd, ArgumentList &serverNames);
 	static void			parseLocation(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd);
 	static void			parseLocationCurrentToken(ConfigLocation &location, const_iterator &cIt);
 	
-	static void			parseServerName(ConfigServer &server, const_iterator &cIt);
+	static void			parseServerName(ArgumentList &serverNames, const_iterator &cIt);
 	static void			parseListen(ConfigServer &server, const_iterator &cIt);
 	static void			checkHost(Host host);
 	static void			parseLimitExcept(ConfigLocation &location, const_iterator &cIt);

@@ -1,14 +1,13 @@
 #include <utility>
 #include "Config.hpp"
 
-void Config::addConfigServer(ConfigServer configServer)
+void Config::addConfigServer(ArgumentList &serverNames, ConfigServer configServer)
 {
 	ConfigServerContainer	&serverContainer = serverMap[std::make_pair(configServer.getHost(), configServer.getPort())];
-	const ArgumentList		&serverNameList = configServer.getServerName();
 
-	if (serverNameList.empty())
-		configServer.setServerName(ArgumentList(1, ""));
-	for (ArgumentList::const_iterator cIt = serverNameList.begin(); cIt != serverNameList.end(); cIt++)
+	if (serverNames.empty())
+		serverNames.push_back("");
+	for (ArgumentList::const_iterator cIt = serverNames.begin(); cIt != serverNames.end(); cIt++)
 		serverContainer.addServerSubPair(std::make_pair(*cIt, configServer));
 }
 

@@ -16,8 +16,6 @@ private:
 	LocationMap		locationMap;
 
 public:
-	void				setServerName(ArgumentList list);
-	const ArgumentList	&getServerName();
 	void				setHostPort(Argument host, Argument port);
 	const Argument		&getHost();
 	const Argument		&getPort();

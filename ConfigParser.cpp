@@ -85,25 +85,26 @@ ConfigParser::ArgumentList ConfigParser::parseDirectiveMult(const_iterator &cIt)
 void ConfigParser::parseServer(Config &config, const_iterator &cIt, const_iterator &cItEnd)
 {
 	ConfigServer	server;
+	ArgumentList	serverNames;
 
 	if ((cIt++)->first != TOKEN_LBRACKET)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 	while (cIt->first != TOKEN_RBRACKET && cIt != cItEnd)
-		parseServerCurrentToken(server, cIt, cItEnd);
+		parseServerCurrentToken(server, cIt, cItEnd, serverNames);
 	if (cIt == cItEnd)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 	cIt++;
-	config.addConfigServer(server);
+	config.addConfigServer(serverNames, server);
 }
 
-void ConfigParser::parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd)
+void ConfigParser::parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd, ArgumentList &serverNames)
 {
 	switch (cIt->first)
 	{
 		case TOKEN_LOCATION:
 			return (parseLocation(server, ++cIt, cItEnd));
 		case TOKEN_SERVER_NAME:
-			return (parseServerName(server, ++cIt));
+			return (parseServerName(serverNames, ++cIt));
 		case TOKEN_LISTEN:
 			return (parseListen(server, ++cIt));
 		case TOKEN_REDIRECT:
@@ -159,9 +160,9 @@ void ConfigParser::parseLocationCurrentToken(ConfigLocation &location, const_ite
 	throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 }
 
-void ConfigParser::parseServerName(ConfigServer &server, const_iterator &cIt)
+void ConfigParser::parseServerName(ArgumentList &serverNames, const_iterator &cIt)
 {
-	server.setServerName(parseDirectiveMult(cIt));
+	parseDirectiveMult(cIt).swap(serverNames);
 }
 
 // 1024 ~ 49151 are reserved for user server application.
