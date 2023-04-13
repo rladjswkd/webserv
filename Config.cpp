@@ -1,9 +1,9 @@
 #include <utility>
 #include "Config.hpp"
 
-void Config::addConfigServer(ArgumentList &serverNames, ConfigServer configServer)
+void Config::addConfigServer(ArgumentList &serverNames, SocketAddr addr, ConfigServer configServer)
 {
-	ConfigServerContainer	&serverContainer = serverMap[std::make_pair(configServer.getHost(), configServer.getPort())];
+	ConfigServerContainer	&serverContainer = serverMap[addr];
 
 	if (serverNames.empty())
 		serverNames.push_back("");

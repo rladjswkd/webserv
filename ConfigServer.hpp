@@ -11,14 +11,9 @@ public:
 	typedef std::map<Route, ConfigLocation>	LocationMap;
 	
 private:
-	ArgumentList	serverName;
-	Argument		host, port;
-	LocationMap		locationMap;
+	LocationMap	locationMap;
 
 public:
-	void				setHostPort(Argument host, Argument port);
-	const Argument		&getHost();
-	const Argument		&getPort();
-	void				addConfigLocation(Route route, ConfigLocation configLocation);
+	void	addConfigLocation(Route route, ConfigLocation configLocation);
 };
 #endif

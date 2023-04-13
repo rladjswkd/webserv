@@ -85,28 +85,28 @@ ConfigParser::ArgumentList ConfigParser::parseDirectiveMult(const_iterator &cIt)
 void ConfigParser::parseServer(Config &config, const_iterator &cIt, const_iterator &cItEnd)
 {
 	ConfigServer	server;
-	ArgumentList	serverNames;
-
+	Key				key;
+	
 	if ((cIt++)->first != TOKEN_LBRACKET)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 	while (cIt->first != TOKEN_RBRACKET && cIt != cItEnd)
-		parseServerCurrentToken(server, cIt, cItEnd, serverNames);
+		parseServerCurrentToken(server, cIt, cItEnd, key);
 	if (cIt == cItEnd)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 	cIt++;
-	config.addConfigServer(serverNames, server);
+	config.addConfigServer(key.serverNames, std::make_pair(key.host, key.port), server);
 }
 
-void ConfigParser::parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd, ArgumentList &serverNames)
+void ConfigParser::parseServerCurrentToken(ConfigServer &server, const_iterator &cIt, const_iterator &cItEnd, Key &key)
 {
 	switch (cIt->first)
 	{
 		case TOKEN_LOCATION:
 			return (parseLocation(server, ++cIt, cItEnd));
 		case TOKEN_SERVER_NAME:
-			return (parseServerName(serverNames, ++cIt));
+			return (parseServerName(key, ++cIt));
 		case TOKEN_LISTEN:
-			return (parseListen(server, ++cIt));
+			return (parseListen(key, ++cIt));
 		case TOKEN_REDIRECT:
 			return (parseRedirect(server, ++cIt));
 		case TOKEN_ERROR_PAGE:
@@ -160,14 +160,14 @@ void ConfigParser::parseLocationCurrentToken(ConfigLocation &location, const_ite
 	throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 }
 
-void ConfigParser::parseServerName(ArgumentList &serverNames, const_iterator &cIt)
+void ConfigParser::parseServerName(Key &key, const_iterator &cIt)
 {
-	parseDirectiveMult(cIt).swap(serverNames);
+	parseDirectiveMult(cIt).swap(key.serverNames);
 }
 
 // 1024 ~ 49151 are reserved for user server application.
 // https://www.ibm.com/docs/en/ztpf/2020?topic=overview-port-numbers
-void ConfigParser::parseListen(ConfigServer &server, const_iterator &cIt)
+void ConfigParser::parseListen(Key &key, const_iterator &cIt)
 {
 	std::stringstream	ss(parseDirectiveOne(cIt));
 	std::string			host;
@@ -175,9 +175,10 @@ void ConfigParser::parseListen(ConfigServer &server, const_iterator &cIt)
 
 	std::getline(ss, host, COLON);
 	checkHost(host);
+	key.host = host;
 	std::getline(ss, port, COLON);
 	checkIfNumberBetween(convertToNumber(port), PORT_LOWER, PORT_UPPER);
-	server.setHostPort(host, port);
+	key.port = port;
 }
 
 void ConfigParser::checkHost(Host host)
