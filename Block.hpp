@@ -5,6 +5,10 @@
 # include <vector>
 # include <map>
 
+# define CLIENT_MAX_BODY_SIZE_DEFAULT	"10000"
+# define AUTOINDEX_DEFAULT				"off"
+# define INDEX_DEFAULT					"index.html"
+
 class BaseBlock
 {
 public:
@@ -16,10 +20,10 @@ protected:
 	ArgumentList	errorPage, index;
 
 public:
-	void	setErrorPage(ArgumentList list);
-	void	setClientMaxBodySize(Argument arg);
-	void	setAutoIndex(Argument arg);
-	void	setIndex(ArgumentList list);
+	void	setErrorPage(ArgumentList list);	// no default value
+	void	setClientMaxBodySize(Argument arg); // default : 1000000
+	void	setAutoIndex(Argument arg);			// default : off
+	void	setIndex(ArgumentList list);		// default : index.html
 };
 
 class InterBlock : public BaseBlock
@@ -28,6 +32,6 @@ protected:
 	ArgumentList	redirect;
 
 public:
-	void	setRedirect(ArgumentList list);
+	void	setRedirect(ArgumentList list);		// no default value
 };
 #endif

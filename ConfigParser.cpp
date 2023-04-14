@@ -187,6 +187,8 @@ void ConfigParser::checkHost(Host host)
 	std::string			buf;
 	int					count = 0;
 
+	if (host == LOCALHOST_STR || host == ASTERISK_STR)
+		return;
 	for (; std::getline(ss, buf, DOT); count++)
 		checkIfNumberBetween(convertToNumber(buf), OCTET_LOWER, OCTET_UPPER);
 	if (count != 4)

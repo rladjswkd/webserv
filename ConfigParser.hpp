@@ -12,6 +12,8 @@
 # define FILE_FORMAT_EXCEPT_MSG	"INVALID FILE FORMAT!"
 # define DOT					'.'
 # define COLON					':'
+# define LOCALHOST_STR			"localhost"
+# define ASTERISK_STR			"*"
 
 class ConfigParser
 {

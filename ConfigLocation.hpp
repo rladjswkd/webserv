@@ -6,8 +6,8 @@
 class ConfigLocation : public InterBlock
 {
 private:
-	Argument		alias;
-	ArgumentList	limitExcept;
+	Argument		alias;			// no default value
+	ArgumentList	limitExcept;	// no default value
 	
 public:
 	void	setAlias(Argument list);
