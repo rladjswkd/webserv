@@ -1,8 +1,9 @@
 #include "Block.hpp"
+#include <utility>
 
-void BaseBlock::setErrorPage(ArgumentList list)
+void BaseBlock::setErrorPage(ErrorCode code, ErrorPage page)
 {
-	errorPage = list;
+	errorPage.insert(std::make_pair(code, page));	
 }
 
 void BaseBlock::setClientMaxBodySize(Argument arg)

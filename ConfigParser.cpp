@@ -225,8 +225,10 @@ void ConfigParser::parseErrorPage(BaseBlock &block, const_iterator &cIt)
 	if (list.size() < 2)
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 	for (ArgumentList::const_iterator cIt = list.begin(); cIt != pageIt; cIt++)
+	{
 		checkIfNumberBetween(convertToNumber(*cIt), STATUS_CODE_LOWER, STATUS_CODE_UPPER);
-	block.setErrorPage(list);
+		block.setErrorPage(*cIt, *pageIt);
+	}
 }
 
 // std::stringstream으로 unsigned long long 타입에 값을 넣으면, 해당 타입의 범위를 넘은 값이 들어갈 경우 타입의 최대값을 넣는다.
