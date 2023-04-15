@@ -136,7 +136,7 @@ void	RequestLexer::bodyLineTokenize(Tokens &tokens)
 	SizeType len;
 
 	len = requestMessage.length();
-	body = requestMessage.substr(0, len);
+	body = requestMessage.substr(2, len);
 	tokens.push_back(std::make_pair(BODY, body));
 }
 

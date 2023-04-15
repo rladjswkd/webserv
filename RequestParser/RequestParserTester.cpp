@@ -5,17 +5,26 @@
 
 void printRequest(Request request)
 {
-	printf("method : %d\n", request.getMethod());
-	printf("uri : %s\n", request.getUriPath().c_str());
-	printf("version : %s\n", request.getHttpVersion().c_str());
-	printf("host : %s\n", request.getHost().c_str());
-	printf("port : %d\n", request.getPort());
-	printf("chunked : %d\n", request.getChunked());
-	printf("contentlength : %d\n", request.getContentLength());
-	printf("Cookie1 : %s = %s\n", (*request.getCookie().begin()).first.c_str(), (*request.getCookie().begin()).second.c_str());
-	printf("Cookie2 : %s = %s\n", ((*(++request.getCookie().begin()))).first.c_str(), (*(++request.getCookie().begin())).second.c_str());
-	printf("body : %s\n", request.getBody().c_str());
-	
+	if (request.getErrorCode().size() > 0)
+		return ;
+	printf("method : \"%d\"\n", request.getMethod());
+	printf("uri : \"%s\"\n", request.getUriPath().c_str());
+	printf("version : \"%s\"\n", request.getHttpVersion().c_str());
+	printf("host : \"%s\"\n", request.getHost().c_str());
+	printf("port : \"%d\"\n", request.getPort());
+	printf("chunked : \"%d\"\n", request.getChunked());
+	printf("contentlength : \"%d\"\n", request.getContentLength());
+	printf("Cookie1 : %s = \"%s\"\n", (*request.getCookie().begin()).first.c_str(), (*request.getCookie().begin()).second.c_str());
+	printf("Cookie2 : %s = \"%s\"\n", ((*(++request.getCookie().begin()))).first.c_str(), (*(++request.getCookie().begin())).second.c_str());
+	printf("body : \"%s\"\n", request.getBody().c_str());
+	printf("other headers============================\n");
+
+	Request::HeaderFieldsMap headerField = request.getHeaderFields();
+	Request::HeaderFieldsMap::iterator it = headerField.begin();
+	for(; it != headerField.end(); ++it)
+	{
+		printf("%s : \"%s\"\n",(*it).first.c_str(), (*it).second.c_str());
+	}
 }
 
 int main()

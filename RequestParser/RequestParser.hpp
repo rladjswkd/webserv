@@ -33,7 +33,7 @@ class RequestParser
     static bool isSpace(std::string str);
     static bool isHttpVersion(std::string str);
     static Request::method_enum  settingMethod(std::string str);
-    static void headerCheck(Tokens &tokens);
+    static void headerCheck(Token &fieldNameToken, Token &fieldValueToken);
     static void mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, FieldValue fieldValue);
     static void nonMandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, FieldValue fieldValue);
     static void hostValidity(FieldName fieldName, FieldValue fieldValue);

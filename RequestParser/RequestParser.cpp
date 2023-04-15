@@ -209,21 +209,12 @@ void RequestParser::nonMandatoryHeaderValidity(HeaderType fieldNameType, FieldNa
   request.setHeaderFields(fieldName, trimAll(fieldValue));
 }
 
-void RequestParser::headerCheck(Tokens &tokens)
+void RequestParser::headerCheck(Token &fieldNameToken, Token &fieldValueToken)
 {
-  HeaderType fieldNameType = (*tokens.begin()).first;
-  FieldName fieldName = (*tokens.begin()).second;
-  if (tokens.size() > 0)
-    tokens.pop_front();
+  if (HOST <= fieldNameToken.first and fieldNameToken.first <= COOKIE)
+    mandatoryHeaderValidity(fieldNameToken.first, fieldNameToken.second, fieldValueToken.second);
   else
-    throw ("400");
-  HeaderType fieldValueType = (*tokens.begin()).first;
-  FieldValue fieldValue = (*tokens.begin()).second;
-  
-  if (HOST <= fieldNameType and fieldNameType <= COOKIE_VALUE)
-    mandatoryHeaderValidity(fieldNameType, fieldName, fieldValue);
-  else
-    nonMandatoryHeaderValidity(fieldNameType, fieldName, fieldValue);
+    nonMandatoryHeaderValidity(fieldNameToken.first, fieldNameToken.second, fieldValueToken.second);
 }
 
 bool RequestParser::isInMandatoryHeader(Tokens &tokens)
@@ -244,18 +235,21 @@ bool RequestParser::isInMandatoryHeader(Tokens &tokens)
 
 void RequestParser::headerLineValidity(Tokens &tokens)
 {
+  Tokens::iterator fieldNameTokenIt, fieldValueTokenIt;
+  int currTokenType;
+
   isInMandatoryHeader(tokens);
-  if (tokens.size() == 0)
-    throw("400");
-  int currTokenType = (*tokens.begin()).first;
-  while (FIELDNAME <= currTokenType and currTokenType <= COOKIE_VALUE)
+  Tokens::iterator it = tokens.begin();
+  for (; it != tokens.end(); ++it)
   {
-    headerCheck(tokens);
-    if (tokens.size() > 0)
-      tokens.pop_front();
-    else
-      break;
-    currTokenType = (*tokens.begin()).first;
+    currTokenType = (*it).first;
+    if (FIELDNAME <= currTokenType and currTokenType <= COOKIE){
+      fieldNameTokenIt = (it);
+      fieldValueTokenIt = (++it);
+      if (fieldValueTokenIt == tokens.end())
+        throw ("400");
+      headerCheck(*fieldNameTokenIt, *fieldValueTokenIt);
+    }
   }
 }
 
@@ -266,7 +260,7 @@ void RequestParser::bodyLineValidity(Tokens &tokens)
   Tokens::iterator it = tokens.begin();
   for(; it != tokens.end(); ++it)
   {
-    currTokenType = (*tokens.begin()).first;
+    currTokenType = (*it).first;
     if (currTokenType == BODY)
       request.setBody((*it).second);
   }
@@ -281,7 +275,7 @@ void RequestParser::errorHandling(const char *code)
 void RequestParser::previousErrorCheck(Tokens &tokens)
 {
   if ((*tokens.begin()).first == ERROR)
-    throw (*tokens.begin()).second;
+    throw (*tokens.begin()).second.c_str();
 }
 
 Request RequestParser::httpParser(Tokens &tokens)

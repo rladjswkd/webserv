@@ -8,14 +8,15 @@
 # define ETC                7
 
 # define FIELDNAME                10
-# define FIELDVALUE               11
-# define HOST                     12
-# define HOST_VALUE               13
-# define TRANSFER_ENCODING        14
-# define TRANSFER_ENCODING_VALUE  15
-# define CONTENT_LENGTH           16
-# define CONTENT_LENGTH_VALUE     17
-# define COOKIE                   18
+# define HOST                     11
+# define TRANSFER_ENCODING        12
+# define CONTENT_LENGTH           13
+# define COOKIE                   14
+
+# define FIELDVALUE               15
+# define HOST_VALUE               16
+# define TRANSFER_ENCODING_VALUE  17
+# define CONTENT_LENGTH_VALUE     18
 # define COOKIE_VALUE             19
 
 # define ERROR              100
