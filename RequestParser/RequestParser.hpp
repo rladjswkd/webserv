@@ -5,7 +5,9 @@
 #include "Request.hpp"
 #include <utility>
 #include <sstream>
+#include <iostream>
 #include <cctype>
+#include <cstdlib>
 
 # define REQUEST_METHOD_LITERAL		"GETPOSTDELETE"
 # define SP_LITERAL	            	" "
@@ -27,6 +29,7 @@ class RequestParser
     static void headerLineValidity(Tokens &tokens);
     static void bodyLineValidity(Tokens &tokens);
     static void errorHandling(const char *code);
+    static void throwError(const char *code, std::string errorReason);
 
     static void previousErrorCheck(Tokens &tokens);
     static bool isMethod(std::string str);
@@ -34,17 +37,27 @@ class RequestParser
     static bool isHttpVersion(std::string str);
     static Request::method_enum  settingMethod(std::string str);
     static void headerCheck(Token &fieldNameToken, Token &fieldValueToken);
-    static void mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, FieldValue fieldValue);
+    static void mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, HeaderType fieldValueType, FieldValue fieldValue);
     static void nonMandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, FieldValue fieldValue);
     static void hostValidity(FieldName fieldName, FieldValue fieldValue);
     static void transferEncodingValidity(FieldName fieldName, FieldValue fieldValue);
     static void contentLengthValidity(FieldName fieldName, FieldValue fieldValue);
     static void cookieValidity(FieldName fieldName, FieldValue fieldValue);
+    static void contentTypeValidity(FieldName fieldName, FieldValue fieldValue, HeaderType fieldValueType);
+    static void extractMultipartFormDataId(FieldValue fieldValue);
     static bool isFieldNameSpace(FieldName fieldName);
     static void hostPortCheck(Port port);
     static bool isInMandatoryHeader(Tokens &tokens);
     static Request::FieldValueListType splitValue(std::string input, char delimiter);
     static std::string trimAll(std::string &str);
+
+    static void inputBodyData(Tokens &tokens);
+    static void chunkedProcess();
+    static Request::ChunkedListType splitBodyData(std::string input);
+    static double chunkedLengthConvert(std::string str);
+    static void multipartFormDataIdProcess();
+    static std::string ft_toLower(std::string str);
+
 
   private:	// constants
 		static const Method	METHOD;

@@ -5,6 +5,7 @@ Request::Request()
     this->port = 0;
     chunked = false;
     errorCode = "";
+    multipartFormDataId = "";
 }
 
 Request::method_enum Request::getMethod() const {
@@ -116,4 +117,14 @@ void Request::setChunked(bool chunked)
 bool Request::getChunked() const
 {
     return chunked;
+}
+
+void Request::setMultipartFormDataId(MultipartFormDataIdType multipartFormDataId)
+{
+    this->multipartFormDataId = multipartFormDataId;
+}
+
+Request::MultipartFormDataIdType Request::getMultipartFormDataId() const
+{
+    return multipartFormDataId;
 }

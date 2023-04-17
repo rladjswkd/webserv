@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
+#include <cctype>
 #include "Request.hpp"
 #include "RequestLexeme.hpp"
 
@@ -44,7 +45,8 @@ class RequestLexer
 		static void	mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap mandatoryHeaderMap);
 		static int	isMandatoryHeader(MandatoryHeaderMap mandatoryHeader, std::string str);
 		static MandatoryHeaderMap mandatoryHeaderInitial();
-
+		static std::string ft_toLower(std::string str);
+		
 	public:
 		static Tokens httpTokenize(std::string inputRequestMessage);
 };

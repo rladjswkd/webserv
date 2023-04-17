@@ -4,6 +4,14 @@ const char *g_CRLF = "\r\n";
 std::string	RequestLexer::requestMessage;
 const RequestLexer::Delimiter	RequestLexer::WHITESPACES = WHITESPACES_LITERAL;
 
+std::string RequestLexer::ft_toLower(std::string str)
+{
+  for (int i = 0; i < str.length(); i++) {
+    str[i] = std::tolower(str[i]);
+  }
+	return str;
+}
+
 bool RequestLexer::isDelimiter(char c)
 {
     return (WHITESPACES.find(c) != std::string::npos);
@@ -86,14 +94,16 @@ RequestLexer::MandatoryHeaderMap RequestLexer::mandatoryHeaderInitial()
 {
 	MandatoryHeaderMap mandatoryHeader;
 
-	mandatoryHeader["Host"] = HOST;
-	mandatoryHeader["Host_Value"] = HOST_VALUE;
-	mandatoryHeader["Transfer-Encoding"] = TRANSFER_ENCODING;
-	mandatoryHeader["Transfer-Encoding_Value"] = TRANSFER_ENCODING_VALUE;
-	mandatoryHeader["Content-Length"] = CONTENT_LENGTH;
-	mandatoryHeader["Content-Length_Value"] = CONTENT_LENGTH_VALUE;
-	mandatoryHeader["Cookie"] = COOKIE;
-	mandatoryHeader["Cookie_Value"] = COOKIE_VALUE;
+	mandatoryHeader["host"] = HOST;
+	mandatoryHeader["host_value"] = HOST_VALUE;
+	mandatoryHeader["transfer-encoding"] = TRANSFER_ENCODING;
+	mandatoryHeader["transfer-encoding_value"] = TRANSFER_ENCODING_VALUE;
+	mandatoryHeader["content-length"] = CONTENT_LENGTH;
+	mandatoryHeader["content-length_value"] = CONTENT_LENGTH_VALUE;
+	mandatoryHeader["cookie"] = COOKIE;
+	mandatoryHeader["cookie_value"] = COOKIE_VALUE;
+	mandatoryHeader["content-type"] = CONTENT_TYPE;
+	mandatoryHeader["multipart/form-data"] = MULTIPART_FORM_DATA;
 
 	return mandatoryHeader;
 }
@@ -105,8 +115,15 @@ int	RequestLexer::isMandatoryHeader(MandatoryHeaderMap mandatoryHeader, std::str
 
 void	RequestLexer::mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap mandatoryHeaderMap)
 {
-	tokens.push_back(std::make_pair(mandatoryHeaderMap[headerField.first], headerField.first));
-	tokens.push_back(std::make_pair(mandatoryHeaderMap[headerField.first + "_Value"], headerField.second));
+
+	std::string headerFieldLower = ft_toLower(headerField.first); //headerfield는 대소문자 구별이 없다. 소문자 기준으로 프로그램을 작성하였다.
+	
+	tokens.push_back(std::make_pair(mandatoryHeaderMap[headerFieldLower], headerFieldLower));
+	if (headerFieldLower == "content-type" 
+		&& ft_toLower(headerField.second).find("multipart/form-data") != std::string::npos)
+		tokens.push_back(std::make_pair(mandatoryHeaderMap["multipart/form-data"], headerField.second));
+	else
+		tokens.push_back(std::make_pair(mandatoryHeaderMap[headerFieldLower + "_value"], headerField.second));
 }
 
 void	RequestLexer::headerLineTokenize(Tokens &tokens)
@@ -120,11 +137,11 @@ void	RequestLexer::headerLineTokenize(Tokens &tokens)
 	{
 		headerLine = getLine();
 		headerfield = colonSplit(headerLine, ':');
-		if (isMandatoryHeader(mandatoryHeader, headerfield.first))
+		if (isMandatoryHeader(mandatoryHeader, ft_toLower(headerfield.first)))
 			mandatoryHeaderProcess(tokens, headerfield, mandatoryHeader);
 		else
 		{
-			tokens.push_back(std::make_pair(FIELDNAME, headerfield.first));
+			tokens.push_back(std::make_pair(FIELDNAME, ft_toLower(headerfield.first)));
 			tokens.push_back(std::make_pair(FIELDVALUE, headerfield.second));
 		}
 	}
