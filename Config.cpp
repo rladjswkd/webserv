@@ -5,8 +5,6 @@ void Config::addConfigServer(ArgumentList &serverNames, SocketAddr addr, ConfigS
 {
 	ConfigServerContainer	&serverContainer = serverMap[addr];
 
-	if (serverNames.empty())
-		serverNames.push_back("");
 	for (ArgumentList::const_iterator cIt = serverNames.begin(); cIt != serverNames.end(); cIt++)
 		serverContainer.addServerSubPair(std::make_pair(*cIt, configServer));
 }

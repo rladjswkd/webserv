@@ -5,7 +5,7 @@
 # include <vector>
 # include <map>
 
-# define CLIENT_MAX_BODY_SIZE_DEFAULT	"10000"
+# define CLIENT_MAX_BODY_SIZE_DEFAULT	"1000000"
 # define AUTOINDEX_DEFAULT				"off"
 # define INDEX_DEFAULT					"index.html"
 
@@ -22,6 +22,7 @@ protected:
 	ErrorPageMap	errorPage;
 
 public:
+	BaseBlock();
 	void	setErrorPage(ErrorCode code, ErrorPage page);	// default : default error page for each error code
 	void	setClientMaxBodySize(Argument arg); 			// default : 1000000
 	void	setAutoIndex(Argument arg);						// default : off

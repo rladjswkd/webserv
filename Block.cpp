@@ -1,5 +1,11 @@
 #include "Block.hpp"
-#include <utility>
+
+BaseBlock::BaseBlock()
+: clientMaxBodySize(CLIENT_MAX_BODY_SIZE_DEFAULT)
+, autoIndex(AUTOINDEX_DEFAULT)
+{
+	index.push_back(INDEX_DEFAULT);
+}
 
 void BaseBlock::setErrorPage(ErrorCode code, ErrorPage page)
 {

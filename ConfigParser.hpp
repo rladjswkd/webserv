@@ -14,6 +14,7 @@
 # define COLON					':'
 # define LOCALHOST_STR			"localhost"
 # define ASTERISK_STR			"*"
+# define PORT_DEFAULT_STR		"8080"
 
 class ConfigParser
 {
@@ -32,6 +33,8 @@ private:
 		ArgumentList	serverNames;
 		Host			host;
 		Port			port;
+
+		Key();
 	};
 
 private:

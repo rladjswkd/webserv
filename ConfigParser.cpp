@@ -266,3 +266,8 @@ void ConfigParser::parseIndex(BaseBlock &block, const_iterator &cIt)
 {
 	block.setIndex(parseDirectiveMult(cIt));
 }
+
+ConfigParser::Key::Key() : host(ASTERISK_STR), port(PORT_DEFAULT_STR)
+{
+	serverNames.push_back("");
+}
