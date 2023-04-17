@@ -19,6 +19,7 @@ private:
 	public:
 		void				addServerSubPair(ServerSubPair pair);
 		const ConfigServer	&getDefaultServer();
+		void				setUndeclaredServerDirectives(const Config &config);
 	};
 
 public:
@@ -31,5 +32,6 @@ private:
 
 public:
 	void	addConfigServer(ArgumentList &serverNames, SocketAddr addr, ConfigServer configServer);
+	void	setUndeclaredDirectives();
 };
 #endif

@@ -5,7 +5,7 @@
 
 // parsing 과정은 uri가 올바른지 확인하진 않는다.
 // TODO: 기본 값을 활용할지, 필수 입력 지시자들을 정할지 결정한 후 필수 입력 지시자들을 정한 경우, 각 블록에 필수 지시자들이 모두 포함되었는지 확인하고 그렇지 않다면 예외 던지기
-
+// nginx 기준 하나의 virtual server가 서로 다른 host:port를 listen으로 설정할 수 있지만, 서브젝트를 기준으로 우리 서버는 하나의 virtual server에 대해 하나의 host:port만 listen하게 구현한다.
 Config ConfigParser::parse(const Tokens &tokens)
 {
 	Config			config;
@@ -14,6 +14,7 @@ Config ConfigParser::parse(const Tokens &tokens)
 
 	while (cIt != cItEnd)
 		parseCurrentToken(config, cIt, cItEnd);
+	config.setUndeclaredDirectives();
 	return (config);
 }
 

@@ -9,6 +9,13 @@ void Config::addConfigServer(ArgumentList &serverNames, SocketAddr addr, ConfigS
 		serverContainer.addServerSubPair(std::make_pair(*cIt, configServer));
 }
 
+void Config::setUndeclaredDirectives()
+{
+	//	every servers
+	for (ServerMap::iterator it = serverMap.begin(); it != serverMap.end(); it++)
+		(it->second).setUndeclaredServerDirectives(*this);
+}
+
 void Config::ConfigServerContainer::addServerSubPair(ServerSubPair pair)
 {
 	serverSubMap.insert(pair);
@@ -19,4 +26,17 @@ void Config::ConfigServerContainer::addServerSubPair(ServerSubPair pair)
 const ConfigServer &Config::ConfigServerContainer::getDefaultServer()
 {
 	return (*defaultServer);
+}
+
+void Config::ConfigServerContainer::setUndeclaredServerDirectives(const Config &config)
+{
+	//	servers on same host:port 
+	for (ServerSubMap::iterator it = serverSubMap.begin(); it != serverSubMap.end(); it++)
+	{
+		ConfigServer	&server = it->second;
+
+		server.setDirectivesBase(config);
+		server.setUndeclaredLocationDirectives(server);
+	}
+		
 }

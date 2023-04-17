@@ -15,5 +15,7 @@ private:
 
 public:
 	void	addConfigLocation(Route route, ConfigLocation configLocation);
+	void	setUndeclaredLocationDirectives(const ConfigServer &server);
 };
+
 #endif
