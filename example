@@ -8,4 +8,6 @@ limit_except GET POST DELETE;                     }
 	}
 server{server_name 1;listen 0.100.200.255:8080;}
 server{server_name 1;listen 0.100.200.255:8080;}
+server{server_name 1;listen localhost:8080;}
+server{server_name a;listen *:8080;}
 autoindex off;
