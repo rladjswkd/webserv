@@ -235,11 +235,11 @@ void ConfigParser::parseErrorPage(BaseBlock &block, const_iterator &cIt)
 // std::stringstream으로 unsigned long long 타입에 값을 넣으면, 해당 타입의 범위를 넘은 값이 들어갈 경우 타입의 최대값을 넣는다.
 void ConfigParser::parseClientMaxBodySize(BaseBlock &block, const_iterator &cIt)
 {
-	Argument	arg = parseDirectiveOne(cIt);
+	size_t	size = convertToNumber(parseDirectiveOne(cIt));
 
-	if (convertToNumber(arg) > std::numeric_limits<unsigned int>::max())
+	if (size > std::numeric_limits<size_t>::max())
 		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	block.setClientMaxBodySize(arg);
+	block.setClientMaxBodySize(size);
 }
 
 void ConfigParser::parseRedirect(InterBlock &block, const_iterator &cIt)
@@ -258,9 +258,11 @@ void ConfigParser::parseAutoIndex(BaseBlock &block, const_iterator &cIt)
 {
 	Argument	arg = parseDirectiveOne(cIt);
 
-	if (arg != AUTOINDEX_ON && arg != AUTOINDEX_OFF)
-		throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
-	block.setAutoIndex(arg);
+	if (arg == AUTOINDEX_ON)
+		return (block.setAutoIndex(true));
+	if (arg == AUTOINDEX_OFF)
+		return (block.setAutoIndex(false));
+	throw (std::invalid_argument(FILE_FORMAT_EXCEPT_MSG));
 }
 
 void ConfigParser::parseIndex(BaseBlock &block, const_iterator &cIt)

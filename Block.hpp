@@ -5,8 +5,8 @@
 # include <vector>
 # include <map>
 
-# define CLIENT_MAX_BODY_SIZE_DEFAULT	"1000000"
-# define AUTOINDEX_DEFAULT				"off"
+# define CLIENT_MAX_BODY_SIZE_DEFAULT	1000000
+# define AUTOINDEX_DEFAULT				false
 # define INDEX_DEFAULT					"index.html"
 
 # define ERROR_PAGE_BIT					1
@@ -24,15 +24,16 @@ public:
 
 protected:
 	unsigned short	mask;
-	Argument		clientMaxBodySize, autoIndex;
+	size_t			clientMaxBodySize;
+	bool			autoIndex;
 	ArgumentList	index;
 	ErrorPageMap	errorPage;
 
 public:
 	BaseBlock();
 	void	setErrorPage(ErrorCode code, ErrorPage page);	// default : default error page for each error code
-	void	setClientMaxBodySize(Argument arg); 			// default : 1000000
-	void	setAutoIndex(Argument arg);						// default : off
+	void	setClientMaxBodySize(size_t arg); 			// default : 1000000
+	void	setAutoIndex(bool arg);						// default : off
 	void	setIndex(ArgumentList list);					// default : index.html
 	void	setDirectivesBase(const BaseBlock &other);
 };
