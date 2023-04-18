@@ -11,9 +11,8 @@ class Request
 	public:
 		typedef std::map<std::string, std::string>	HeaderFieldsMap;		
 		typedef std::map<std::string, std::string>  CookieType;
-		typedef std::string													HostType, MultipartFormDataIdType;
-		typedef	int																	PortType;
-		typedef std::list<std::string>							FieldValueListType, ChunkedListType, MultipartFormDataIdListType;
+		typedef std::string							HostType, MultipartFormDataIdType, PortType;
+		typedef std::list<std::string>				FieldValueListType, ChunkedListType, MultipartFormDataIdListType;
 
 		enum	method_enum
 		{

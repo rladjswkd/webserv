@@ -25,4 +25,4 @@ int main()
 	return (0);
 }
 
-//c++ RequestLexerTester.cpp RequestLexer.cpp Request.cpp
+//c++ -Wall -Wextra -Werror -std=c++98 RequestLexerTester.cpp RequestLexer.cpp Request.cpp

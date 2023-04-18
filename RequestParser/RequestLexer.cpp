@@ -6,7 +6,7 @@ const RequestLexer::Delimiter	RequestLexer::WHITESPACES = WHITESPACES_LITERAL;
 
 std::string RequestLexer::ft_toLower(std::string str)
 {
-  for (int i = 0; i < str.length(); i++) {
+  for (unsigned int i = 0; i < str.length(); i++) {
     str[i] = std::tolower(str[i]);
   }
 	return str;

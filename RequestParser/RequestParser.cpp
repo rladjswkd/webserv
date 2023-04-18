@@ -2,7 +2,6 @@
 
 Request RequestParser::request;
 RequestParser::BodyType RequestParser::bodyTemp;
-const RequestParser::Method RequestParser::METHOD = REQUEST_METHOD_LITERAL;
 const RequestParser::Space RequestParser::SPACE = SP_LITERAL;
 const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
 
@@ -10,7 +9,7 @@ const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
 //util__
 std::string RequestParser::ft_toLower(std::string str)
 {
-  for (int i = 0; i < str.length(); i++) {
+  for (unsigned int i = 0; i < str.length(); i++) {
     str[i] = std::tolower(str[i]);
   }
 	return str;
@@ -39,14 +38,14 @@ Request::FieldValueListType RequestParser::splitValue(std::string input, char de
     std::string temp;
  
     while (getline(ss, temp, delimiter)) {
-        result.push_back(temp);
+      result.push_back(temp);
     }
     return result;
 }
 
 bool RequestParser::isMethod(std::string str)
 {
-    return (METHOD.find(str) != std::string::npos);
+  return (str == "GET" || str == "POST" || str == "DELETE");
 }
 
 bool RequestParser::isSpace(std::string str)
@@ -101,19 +100,19 @@ bool RequestParser::isFieldNameSpace(FieldName fieldName)
 void RequestParser::hostPortCheck(Port port)
 {
   int portNum = atoi(port.c_str());
-  if (portNum == 0)
+  if (portNum == 0 || (portNum < 1024 || portNum > 49151))
     throwError("400", "host port syntax error!");
-  request.setPort(portNum);
+  request.setPort(port);
 }
 
-void RequestParser::hostValidity(FieldName fieldName, FieldValue fieldValue)
+void RequestParser::hostValidity(FieldValue fieldValue)
 {
   if (fieldValue.empty()) //fieldValue 비었는지 확인함.
     throwError("400", "field value empty!");
   if (request.getHost().size() > 0) //Host 2개 이상 들어왔는지 체크, 이미 Host에 넣었으면 size가 0이상
     throwError("400", "host field is allowed only one!");
   SizeType pos = fieldValue.find(":");
-  SizeType len = fieldValue.length();
+  SizeType len = fieldValue.length(); //naver.com:8000
   if (pos != std::string::npos)
     hostPortCheck(fieldValue.substr(pos + 1, len));
   std::string host = fieldValue.substr(0, pos);
@@ -121,7 +120,7 @@ void RequestParser::hostValidity(FieldName fieldName, FieldValue fieldValue)
   request.setHost(host);
 }
 
-void RequestParser::transferEncodingValidity(FieldName fieldName, FieldValue fieldValue)
+void RequestParser::transferEncodingValidity(FieldValue fieldValue)
 {
   Request::FieldValueListType transferEncodingValue;
   transferEncodingValue = splitValue(fieldValue, ',');
@@ -136,13 +135,14 @@ void RequestParser::transferEncodingValidity(FieldName fieldName, FieldValue fie
   for (; it != transferEncodingValue.end(); ++it, cnt++)
   {
     currStr = trimAll((*it));
+    std::cout << "currStr : " << "\""<< currStr <<"\"" << std::endl;
     if (cnt == 1 && currStr == "chunked") //처음에 오면 괜찮음.
       chunked = 1;
     
-    if (cnt != len && currStr == "chunked") //중간에 chunked오면 문법오류
+    if (chunked == 0 && (cnt > 1 && cnt < len)) // 중간에 chunked 나오면 에러처리
       throwError("400", "chunked syntax error!");
-    
-    if (chunked == 1 && currStr == "chunked") //chunked 중복으로 나오면 문법오류
+
+    if (chunked == 1 && cnt > 1 && currStr.length() > 0) //chunked가 1개가 아니거나, chunked이후에 다른 것이 나오면 문법오류
       throwError("400", "chunked syntax error!");
     
     if (chunked == 0 && cnt == len && currStr == "chunked") //마지막에 chunked있으면 ok
@@ -153,7 +153,7 @@ void RequestParser::transferEncodingValidity(FieldName fieldName, FieldValue fie
   request.setTransferEncoding(transferEncodingValue);
 }
 
-void RequestParser::contentLengthValidity(FieldName fieldName, FieldValue fieldValue)
+void RequestParser::contentLengthValidity(FieldValue fieldValue)
 {
   Request::FieldValueListType contentLengthValue;
   contentLengthValue = splitValue(fieldValue, ',');
@@ -174,15 +174,13 @@ void RequestParser::contentLengthValidity(FieldName fieldName, FieldValue fieldV
   request.setContentLength(contentLength);
 }
 
-void RequestParser::cookieValidity(FieldName fieldName, FieldValue fieldValue)
+void RequestParser::cookieValidity(FieldValue fieldValue)
 {
   Request::FieldValueListType cookieValue, cookieKeyValue;
   cookieValue = splitValue(fieldValue, ';');
   if (!cookieValue.size())
     return ;
   Request::FieldValueListType::iterator it = cookieValue.begin();
-  SizeType pos;
-
   for (; it != cookieValue.end(); ++it)
   {
     cookieKeyValue = splitValue((*it), '=');
@@ -198,7 +196,7 @@ void RequestParser::extractMultipartFormDataId(FieldValue fieldValue)
   request.setMultipartFormDataId(fieldValue.substr(pos + 9, fieldValue.length()));
 }
 
-void RequestParser::contentTypeValidity(FieldName fieldName, FieldValue fieldValue, HeaderType fieldValueType)
+void RequestParser::contentTypeValidity(FieldValue fieldValue, HeaderType fieldValueType)
 {
   if (fieldValueType == MULTIPART_FORM_DATA)
   {
@@ -214,26 +212,26 @@ void RequestParser::mandatoryHeaderValidity(HeaderType fieldNameType, FieldName 
   switch (fieldNameType)
   {
     case HOST:
-      hostValidity(fieldName, fieldValue);
+      hostValidity(fieldValue);
       break;
     case TRANSFER_ENCODING:
-      transferEncodingValidity(fieldName, fieldValue);
+      transferEncodingValidity(fieldValue);
       break;
     case CONTENT_LENGTH:
-      contentLengthValidity(fieldName, fieldValue);
+      contentLengthValidity(fieldValue);
       break;
     case COOKIE:
-      cookieValidity(fieldName, fieldValue);
+      cookieValidity(fieldValue);
       break;
     case CONTENT_TYPE:
-      contentTypeValidity(fieldName, fieldValue, fieldValueType);
+      contentTypeValidity(fieldValue, fieldValueType);
       break;
     default:
       break;
   }
 }
 
-void RequestParser::nonMandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, FieldValue fieldValue)
+void RequestParser::nonMandatoryHeaderValidity(FieldName fieldName, FieldValue fieldValue)
 {
   if (isFieldNameSpace(fieldName))
     throwError("400", "fieldname is not allowed SP!");
@@ -242,10 +240,10 @@ void RequestParser::nonMandatoryHeaderValidity(HeaderType fieldNameType, FieldNa
 
 void RequestParser::headerCheck(Token &fieldNameToken, Token &fieldValueToken)
 {
-  if (HOST <= fieldNameToken.first and fieldNameToken.first <= CONTENT_TYPE)
+  if (HOST <= fieldNameToken.first && fieldNameToken.first <= CONTENT_TYPE)
     mandatoryHeaderValidity(fieldNameToken.first, fieldNameToken.second, fieldValueToken.first ,fieldValueToken.second);
   else
-    nonMandatoryHeaderValidity(fieldNameToken.first, fieldNameToken.second, fieldValueToken.second);
+    nonMandatoryHeaderValidity(fieldNameToken.second, fieldValueToken.second);
 }
 
 bool RequestParser::isInMandatoryHeader(Tokens &tokens)
@@ -274,7 +272,7 @@ void RequestParser::headerLineValidity(Tokens &tokens)
   for (; it != tokens.end(); ++it)
   {
     currTokenType = (*it).first;
-    if (FIELDNAME <= currTokenType and currTokenType <= CONTENT_TYPE){
+    if (FIELDNAME <= currTokenType && currTokenType <= CONTENT_TYPE){
       fieldNameTokenIt = (it);
       fieldValueTokenIt = (++it);
       if (fieldValueTokenIt == tokens.end())
@@ -315,7 +313,7 @@ Request::ChunkedListType RequestParser::splitBodyData(std::string input) {
 double RequestParser::chunkedLengthConvert(std::string str)
 {
   char *end;
-  double num = strtoll(str.c_str(), &end, 16);
+  double num = strtol(str.c_str(), &end, 16);
   if (num == 0 && end == str)
     throwError("400", "chunked body number syntax error!");
   return num;
@@ -370,11 +368,11 @@ void RequestParser::multipartFormDataIdProcess()
       throwError("400", "multipart form data id error!");
     
     contentDisposition = getBodyLine();
-    if (id.length() == 0 || ft_toLower(contentDisposition).find("content-disposition") == std::string::npos)
+    if (id.length() == 0 || ft_toLower(contentDisposition).find("content-disposition") != 0)
       throwError("400", "content-disposition error!");
     
     contentType = getBodyLine();
-    if (contentType.length() == 0 || ft_toLower(contentType).find("content-type") == std::string::npos)
+    if (contentType.length() == 0 || ft_toLower(contentType).find("content-type") != 0)
       throwError("400", "content-type error!");
  
     emptyArea = getBodyLine();

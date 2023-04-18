@@ -9,7 +9,6 @@
 #include <cctype>
 #include <cstdlib>
 
-# define REQUEST_METHOD_LITERAL		"GETPOSTDELETE"
 # define SP_LITERAL	            	" "
 # define HTTP_VERSION             "HTTP/1.1"
 
@@ -38,12 +37,12 @@ class RequestParser
     static Request::method_enum  settingMethod(std::string str);
     static void headerCheck(Token &fieldNameToken, Token &fieldValueToken);
     static void mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, HeaderType fieldValueType, FieldValue fieldValue);
-    static void nonMandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, FieldValue fieldValue);
-    static void hostValidity(FieldName fieldName, FieldValue fieldValue);
-    static void transferEncodingValidity(FieldName fieldName, FieldValue fieldValue);
-    static void contentLengthValidity(FieldName fieldName, FieldValue fieldValue);
-    static void cookieValidity(FieldName fieldName, FieldValue fieldValue);
-    static void contentTypeValidity(FieldName fieldName, FieldValue fieldValue, HeaderType fieldValueType);
+    static void nonMandatoryHeaderValidity(FieldName fieldName, FieldValue fieldValue);
+    static void hostValidity(FieldValue fieldValue);
+    static void transferEncodingValidity(FieldValue fieldValue);
+    static void contentLengthValidity(FieldValue fieldValue);
+    static void cookieValidity(FieldValue fieldValue);
+    static void contentTypeValidity(FieldValue fieldValue, HeaderType fieldValueType);
     static void extractMultipartFormDataId(FieldValue fieldValue);
     static bool isFieldNameSpace(FieldName fieldName);
     static void hostPortCheck(Port port);
