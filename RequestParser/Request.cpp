@@ -1,11 +1,9 @@
 #include "Request.hpp"
 
 Request::Request()
+: port(0), chunked(false), errorCode(""), multipartFormDataId("")
 {
-    this->port = 0;
-    chunked = false;
-    errorCode = "";
-    multipartFormDataId = "";
+    
 }
 
 Request::method_enum Request::getMethod() const {

@@ -1,10 +1,13 @@
 #include "RequestParser.hpp"
 
 Request RequestParser::request;
+RequestParser::BodyType RequestParser::bodyTemp;
 const RequestParser::Method RequestParser::METHOD = REQUEST_METHOD_LITERAL;
 const RequestParser::Space RequestParser::SPACE = SP_LITERAL;
 const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
 
+
+//util__
 std::string RequestParser::ft_toLower(std::string str)
 {
   for (int i = 0; i < str.length(); i++) {
@@ -25,6 +28,10 @@ std::string RequestParser::trimAll(std::string &str)
   else str.erase(str.begin(), str.end());
   return str;
 }
+
+//util__end
+
+
 
 Request::FieldValueListType RequestParser::splitValue(std::string input, char delimiter) {
     Request::FieldValueListType result;
@@ -314,61 +321,69 @@ double RequestParser::chunkedLengthConvert(std::string str)
   return num;
 }
 
+
+std::string	RequestParser::getBodyLine()
+{	
+	std::string::size_type pos = bodyTemp.find("\r\n");
+	std::string	line;
+	
+	if (pos == std::string::npos)
+	  return ("");
+	line = bodyTemp.substr(0, pos);
+  bodyTemp = bodyTemp.substr(pos + 2, bodyTemp.length());
+	return line;
+}
+
+
 void RequestParser::chunkedProcess()
 {
-  Request::ChunkedListType chunkedList;
   double chunkedLength;
+  bodyTemp = request.getBody();
   std::string bodyConverted;
+  std::string line;
 
-  chunkedList = splitBodyData(request.getBody());
-  Request::ChunkedListType::iterator it = chunkedList.begin();
-  for (; it != chunkedList.end(); ++it)
-  {
-    chunkedLength = chunkedLengthConvert(*it);
-    ++it;
-    if (it == chunkedList.end() or (*it).length() != chunkedLength)
+  while ((line = getBodyLine()).size() > 0)
+  {  
+    chunkedLength = chunkedLengthConvert(line);    
+    if (chunkedLength == 0)
+      break;
+    line = getBodyLine();
+    if ((line).length() != chunkedLength)
       throwError("400", "chunked body syntax error!");
-    bodyConverted.append(*it);
+    bodyConverted.append(line);
   }
   request.setBody(bodyConverted);
 }
 
 void RequestParser::multipartFormDataIdProcess()
 {
-  Request::MultipartFormDataIdListType multipartFormDataIdList;
-  std::string bodyConverted, id, contentDisposition, contentType, emptyArea;
+  std::string bodyConverted, id, contentDisposition, contentType, emptyArea, bodyPiece, multipartFormDataId;
 
-  multipartFormDataIdList = splitBodyData(request.getBody());
-  Request::MultipartFormDataIdListType::iterator it = multipartFormDataIdList.begin();
-
-  for (; it != multipartFormDataIdList.end(); ++it)
+  bodyTemp = request.getBody();
+  multipartFormDataId = request.getMultipartFormDataId();
+  while ((id = getBodyLine()).size() > 0)
   {
-    id = (*it);
-
-    if (id == "--" + request.getMultipartFormDataId() + "--") // end point
+    if (id == "--" + multipartFormDataId + "--") // end point
       break;
 
-    if (id != "--" + request.getMultipartFormDataId())
+    if (id != "--" + multipartFormDataId)
       throwError("400", "multipart form data id error!");
     
-    ++it;
-    contentDisposition = (*it);
-    if (it == multipartFormDataIdList.end() || ft_toLower(contentDisposition).find("content-disposition") == std::string::npos)
+    contentDisposition = getBodyLine();
+    if (id.length() == 0 || ft_toLower(contentDisposition).find("content-disposition") == std::string::npos)
       throwError("400", "content-disposition error!");
     
-    ++it;
-    contentType = (*it);
-    if (it == multipartFormDataIdList.end() || ft_toLower(contentType).find("content-type") == std::string::npos)
+    contentType = getBodyLine();
+    if (contentType.length() == 0 || ft_toLower(contentType).find("content-type") == std::string::npos)
       throwError("400", "content-type error!");
-    
-    ++it;
-    emptyArea = (*it);
-    if (it == multipartFormDataIdList.end() || !emptyArea.empty())
+ 
+    emptyArea = getBodyLine();
+    if (!emptyArea.empty())
       throwError("400", "body sytax(multipart form) error!");
     
-    ++it;
-    if (it != multipartFormDataIdList.end())
-      bodyConverted.append(*it);
+    bodyPiece = getBodyLine();
+    if (bodyPiece.length() != 0)
+      bodyConverted.append(bodyPiece);
   }
   request.setBody(bodyConverted);
 }

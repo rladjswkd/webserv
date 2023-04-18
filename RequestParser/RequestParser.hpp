@@ -19,7 +19,7 @@ class RequestParser
   typedef RequestLexer::Token Token;
   typedef RequestLexer::MandatoryHeaderMap MandatoryHeaderMap;
   typedef RequestLexer::SizeType SizeType;
-  typedef std::string Method, Space, HttpVersion, FieldName, FieldValue, Port;
+  typedef std::string Method, Space, HttpVersion, FieldName, FieldValue, Port, BodyType;
   typedef int HeaderType;
 
 
@@ -57,7 +57,7 @@ class RequestParser
     static double chunkedLengthConvert(std::string str);
     static void multipartFormDataIdProcess();
     static std::string ft_toLower(std::string str);
-
+    static std::string getBodyLine();
 
   private:	// constants
 		static const Method	METHOD;
@@ -66,6 +66,7 @@ class RequestParser
 
   private:
 		static Request	request;
+    static BodyType bodyTemp;
 
   public:
     static Request httpParser(Tokens &tokens);
