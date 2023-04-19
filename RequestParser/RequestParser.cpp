@@ -67,6 +67,39 @@ Request::method_enum  RequestParser::settingMethod(std::string str)
   return Request::DELETE;
 }
 
+void RequestParser::queryStringSyntaxCheck(std::string uri)
+{
+  Request::UriListType uriList, queryStringList, keyValueList;
+  std::string queryString;
+
+  uriList = splitValue(uri, '?');
+  if (uriList.size() != 2)
+    throwError("400", "uri syntax error!");
+
+  queryString = *(--uriList.end());
+  if (queryString.find("=") == std::string::npos)
+    throwError("400", "uri syntax error!");
+  
+  queryStringList = splitValue(queryString, '&');
+  Request::UriListType::iterator it = queryStringList.begin();
+  for(; it != queryStringList.end(); ++it)
+  {
+    keyValueList = splitValue((*it), '=');
+    if (keyValueList.size() != 2 || (*keyValueList.begin()).length() == 0 || (*(++keyValueList.begin())).length() == 0)
+      throwError("400", "queryString syntax error!");
+  }
+  request.setUriPath(uri.substr(0, uri.length() - queryString.length() - 1));
+  request.setQueryString(queryString);
+}
+
+bool RequestParser::isQueryString(std::string str)
+{
+  if (str.find("?") != std::string::npos)
+    return true;
+  else
+    return false;  
+}
+
 void RequestParser::startLineValidity(Tokens &tokens)
 {
   Token method = *(tokens.begin());
@@ -83,11 +116,14 @@ void RequestParser::startLineValidity(Tokens &tokens)
     throwError("400", "startline method syntax error!");
   if (!isSpace(sp1.second) || !isSpace(sp2.second))
     throwError("400", "startline SP syntax error!");
+  if (isQueryString(uri.second))
+    queryStringSyntaxCheck(uri.second);
+  else
+    request.setUriPath(uri.second);
   if (!isHttpVersion(httpVersion.second))
-    throwError("400", "startline http version syntax error!");
+    throwError("505", "startline http version syntax error!");
   
   request.setMethod(settingMethod(method.second));
-  request.setUriPath(uri.second);
   request.setHttpVersion(httpVersion.second);
 }
 

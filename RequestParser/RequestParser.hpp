@@ -33,6 +33,8 @@ class RequestParser
     static void previousErrorCheck(Tokens &tokens);
     static bool isMethod(std::string str);
     static bool isSpace(std::string str);
+    static bool isQueryString(std::string str);
+    static void queryStringSyntaxCheck(std::string queryString);
     static bool isHttpVersion(std::string str);
     static Request::method_enum  settingMethod(std::string str);
     static void headerCheck(Token &fieldNameToken, Token &fieldValueToken);
