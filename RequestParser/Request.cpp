@@ -71,7 +71,7 @@ uint32_t Request::getContentLength() const {
     return contentLength;
 }
 
-void Request::setContentLength(uint32_t contentLength) {
+void Request::setContentLength(ContentLengthType contentLength) {
     this->contentLength = contentLength;
 }
 

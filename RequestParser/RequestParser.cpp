@@ -208,6 +208,7 @@ void RequestParser::contentLengthValidity(FieldValue fieldValue)
       throwError("400", "content length syntax error!");
   }
   request.setContentLength(contentLength);
+  request.setHeaderFields("content-length","content-length_value");
 }
 
 void RequestParser::cookieValidity(FieldValue fieldValue)
@@ -429,6 +430,8 @@ void RequestParser::bodyLineValidity(Tokens &tokens)
     multipartFormDataIdProcess();
   if (request.getChunked())
     chunkedProcess();
+  if (request.getHeaderFields().count("content-length") == 0)
+    request.setContentLength(request.getBody().length());
 }
 
 void RequestParser::throwError(const char *code, std::string errorReason)

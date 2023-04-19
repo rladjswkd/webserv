@@ -13,6 +13,7 @@ class Request
 		typedef std::map<std::string, std::string>  CookieType;
 		typedef std::string							HostType, MultipartFormDataIdType, PortType;
 		typedef std::list<std::string>				FieldValueListType, ChunkedListType, MultipartFormDataIdListType, UriListType;
+		typedef size_t								ContentLengthType;
 
 		enum	method_enum
 		{
@@ -35,9 +36,9 @@ class Request
 		HostType	host;
 		PortType	port;
 		FieldValueListType	transferEncoding;
-		bool			chunked;					// chunked가 포함되어 있는지 여부(default=false)
-		uint32_t	contentLength;
-		CookieType	cookie;
+		bool				chunked;					// chunked가 포함되어 있는지 여부(default=false)
+		ContentLengthType	contentLength;
+		CookieType			cookie;
 		MultipartFormDataIdType multipartFormDataId; //upload시 사용됨. 이 id를 기준으로 계속 데이터가 들어옴.
 
 		//body
@@ -69,7 +70,7 @@ class Request
 		void setHeaderFields(std::string key, std::string value);
 		void setHost(HostType host);
 		void setTransferEncoding(FieldValueListType transferEncoding);
-		void setContentLength(uint32_t contentLength);
+		void setContentLength(ContentLengthType contentLength);
 		void setCookie(std::string key, std::string value);
 		void setBody(std::string body);
 		void setErrorCode(std::string errorCode);
