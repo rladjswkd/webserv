@@ -9,7 +9,7 @@
 class Request
 {
 	public:
-		typedef std::map<std::string, std::string>	HeaderFieldsMap;		
+		typedef std::map<std::string, std::string>	HeaderFieldsMap, QueryStringMapType;
 		typedef std::map<std::string, std::string>  CookieType;
 		typedef std::string							HostType, MultipartFormDataIdType, PortType;
 		typedef std::list<std::string>				FieldValueListType, ChunkedListType, MultipartFormDataIdListType, UriListType;
@@ -29,6 +29,7 @@ class Request
 		method_enum	method;
 		std::string	uriPath;
 		std::string	queryString;
+		QueryStringMapType queryStringMap;
 		std::string	httpVersion;
 
 		//header fields
@@ -62,6 +63,7 @@ class Request
 		PortType	getPort() const;
 		bool	getChunked() const;
 		MultipartFormDataIdType getMultipartFormDataId() const;
+		QueryStringMapType getQueryStringMap() const;
 
 		void setMethod(method_enum method);
 		void setUriPath(std::string uriPath);
@@ -77,6 +79,7 @@ class Request
 		void setPort(PortType port);
 		void setChunked(bool chunked);
 		void setMultipartFormDataId(MultipartFormDataIdType multipartFormDataId);
+		void setQueryStringMap(std::string key, std::string value);
 	
 };
 

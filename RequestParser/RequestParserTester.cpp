@@ -10,6 +10,14 @@ void printRequest(Request request)
 	printf("method : \"%d\"\n", request.getMethod());
 	printf("uri : \"%s\"\n", request.getUriPath().c_str());
 	printf("queryString : \"%s\"\n", request.getQueryString().c_str());
+	Request::QueryStringMapType queryStringMap = request.getQueryStringMap();
+	Request::QueryStringMapType::iterator qit = queryStringMap.begin();
+	printf("\nQueryString Map List============================\n");
+	for(; qit != queryStringMap.end(); ++qit)
+	{
+		printf("%s : \"%s\"\n",(*qit).first.c_str(), (*qit).second.c_str());
+	}
+	printf("================================================\n\n");
 	printf("version : \"%s\"\n", request.getHttpVersion().c_str());
 	printf("host : \"%s\"\n", request.getHost().c_str());
 	printf("port : \"%s\"\n", request.getPort().c_str());
@@ -19,7 +27,7 @@ void printRequest(Request request)
 	printf("Cookie2 : %s = \"%s\"\n", ((*(++request.getCookie().begin()))).first.c_str(), (*(++request.getCookie().begin())).second.c_str());
 	printf("multitype-form-data : \"%s\"\n", request.getMultipartFormDataId().c_str());
 	printf("body : \"%s\"\n", request.getBody().c_str());
-	printf("other headers============================\n");
+	printf("\nother headers============================\n");
 
 	Request::HeaderFieldsMap headerField = request.getHeaderFields();
 	Request::HeaderFieldsMap::iterator it = headerField.begin();
@@ -27,6 +35,7 @@ void printRequest(Request request)
 	{
 		printf("%s : \"%s\"\n",(*it).first.c_str(), (*it).second.c_str());
 	}
+	printf("===========================================\n\n");
 }
 
 int main()

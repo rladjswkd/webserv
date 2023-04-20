@@ -87,6 +87,7 @@ void RequestParser::queryStringSyntaxCheck(std::string uri)
     keyValueList = splitValue((*it), '=');
     if (keyValueList.size() != 2 || (*keyValueList.begin()).length() == 0 || (*(++keyValueList.begin())).length() == 0)
       throwError("400", "queryString syntax error!");
+    request.setQueryStringMap(*keyValueList.begin(), *(++keyValueList.begin()));
   }
   request.setUriPath(uri.substr(0, uri.length() - queryString.length() - 1));
   request.setQueryString(queryString);
@@ -171,7 +172,6 @@ void RequestParser::transferEncodingValidity(FieldValue fieldValue)
   for (; it != transferEncodingValue.end(); ++it, cnt++)
   {
     currStr = trimAll((*it));
-    std::cout << "currStr : " << "\""<< currStr <<"\"" << std::endl;
     if (cnt == 1 && currStr == "chunked") //처음에 오면 괜찮음.
       chunked = 1;
     

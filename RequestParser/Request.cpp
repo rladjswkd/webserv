@@ -126,3 +126,13 @@ Request::MultipartFormDataIdType Request::getMultipartFormDataId() const
 {
     return multipartFormDataId;
 }
+
+void Request::setQueryStringMap(std::string key, std::string value)
+{
+    this->queryStringMap[key] = value;
+}
+
+Request::QueryStringMapType Request::getQueryStringMap() const
+{
+    return queryStringMap;
+}
