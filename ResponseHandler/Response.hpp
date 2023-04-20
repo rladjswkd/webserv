@@ -8,6 +8,7 @@ class Response
 {
     public:
         typedef std::map<std::string, std::string>  CookieType;
+        typedef std::string StatusCodeType;
 
     private:
         std::string statusCode;
