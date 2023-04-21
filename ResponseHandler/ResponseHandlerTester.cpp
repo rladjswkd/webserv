@@ -5,7 +5,11 @@
 
 void responseTestSetting(Response &response)
 {
-	
+	response.setStatusCode("200");
+	response.setBody("this is test Body message.");
+	response.setLocation("/testLocation");
+	response.setCookie("id", "johnson");
+	response.setCookie("pw", "abcd1234");
 }
 
 int main()
@@ -20,4 +24,4 @@ int main()
 	return (0);
 }
 
-//c++ -Wall -Wextra -Werror -std=c++98 ResponseHandlerTester.cpp Response.cpp ResponseHandler.cpp
+//c++ -Wall -Wextra -Werror -std=c++98 ResponseHandlerTester.cpp Response.cpp ResponseHandler.cpp StatusText.cpp -o responseHandlerTester

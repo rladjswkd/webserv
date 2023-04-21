@@ -69,6 +69,13 @@ ResponseHandler::DateType ResponseHandler::getCookieTime() {
     return cookieTime;
 }
 
+bool ResponseHandler::isSession(std::string key)
+{
+    if (key == SESSION_ID)
+        return true;
+    return false;
+}
+
 ResponseHandler::CookieStringType ResponseHandler::getCookieString()
 {
     ResponseHandler::CookieStringType cookieString;
@@ -81,8 +88,8 @@ ResponseHandler::CookieStringType ResponseHandler::getCookieString()
         cookieString += (*it).first;
         cookieString += "=";
         cookieString += (*it).second;
-        cookieString += "; ";
-        cookieString += getCookieTime();
+        if (!isSession((*it).first))
+            cookieString += ("; expires=" + getCookieTime());
         cookieString += CRLF;
     }
     return cookieString;
@@ -91,7 +98,7 @@ ResponseHandler::CookieStringType ResponseHandler::getCookieString()
 bool ResponseHandler::isRedirectStatusCode()
 {
     Response::StatusCodeType statusCode = response.getStatusCode();
-    if (statusCode.find("3"))
+    if (statusCode.find("3") == 0)
         return true;
     return false;
 }
@@ -153,25 +160,46 @@ ResponseHandler::ResponseMessageType ResponseHandler::pasteAll(StartLineType &st
     return responseMessage;
 }
 
+ResponseHandler::ResponseMessageType ResponseHandler::createNormalMessage()
+{
+    ResponseMessageType responseMessage, startLine, headerLine, body;
+
+    startLine = createStartLine();
+    headerLine = createHeaderLine();
+    body = createBody();
+    responseMessage = pasteAll(startLine, headerLine, body);
+    return responseMessage;
+}
+
+ResponseHandler::BodyType ResponseHandler::getErrorPageBody()
+{
+    std::string fileLocation = ERROR_PAGE_LOCATION + response.getStatusCode() + ".html";
+    std::ifstream file(fileLocation);
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
 ResponseHandler::ResponseMessageType ResponseHandler::createErrorMessage()
 {
+    ResponseMessageType errorMessage, startLine, headerLine, body;
 
+    startLine = createStartLine();
+    body = getErrorPageBody();
+    response.setBody(body); //content Length가 header쪽에서 response body를 보고 바껴서 body와 header 순서를 바꿔줌.
+    headerLine = createHeaderLine();
+    errorMessage = pasteAll(startLine, headerLine, body);
+    return errorMessage;
 }
 
 ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(Response &inputResponseMessage)
 {
-    ResponseHandler::ResponseMessageType outputResponseMessage, startLine, headerLine, body;
+    ResponseMessageType outputResponseMessage;
     
     response = inputResponseMessage;
     if (!isErrorStatusCode())
-    {
-        startLine = createStartLine();
-        headerLine = createHeaderLine();
-        body = createBody();
-        outputResponseMessage = pasteAll(startLine, headerLine, body);
-    }
+        outputResponseMessage = createNormalMessage();
     else
         outputResponseMessage = createErrorMessage();
-
     return outputResponseMessage; 
 }

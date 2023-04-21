@@ -6,14 +6,17 @@
 #include <iostream>
 #include <ctime>
 #include <sstream>
+#include <fstream>
 #include "Response.hpp"
 #include "StatusText.hpp"
 
-# define HTTP_VERSION		"HTTP/1.1"
-# define SP                 " "
-# define CRLF               "\r\n"
-# define TEXT_HTML          "text/html"
-# define COOKIE_VALID_TIME 2
+# define HTTP_VERSION		    "HTTP/1.1"
+# define SP                     " "
+# define CRLF                   "\r\n"
+# define TEXT_HTML              "text/html"
+# define COOKIE_VALID_TIME      2
+# define ERROR_PAGE_LOCATION    "./ErrorPage/"
+# define SESSION_ID             "session_id"
 
 class ResponseHandler
 {
@@ -24,6 +27,9 @@ class ResponseHandler
 
     private:
         static bool isErrorStatusCode();
+        static ResponseMessageType createNormalMessage();
+        static ResponseMessageType createErrorMessage();
+        static BodyType getErrorPageBody();
 
         static StartLineType createStartLine();
         static StatusTextMapType initialStatusTextMap();
@@ -32,21 +38,15 @@ class ResponseHandler
         static DateType getCurrentTime();
         static ContentLengthType getContentLength();
         static std::string sizet_to_string(size_t value);
+        static bool isSession(std::string key);
         static CookieStringType getCookieString();
         static DateType getCookieTime();
         static bool isRedirectStatusCode();
         static RedirectLocationType createRedirectLocation();
 
-        static BodyType createBody();
-
-        static ResponseMessageType createErrorMessage();
-        static ErrorPageLocationMapType initialErrorPageMap();
-        static ErrorPageLocationType getErrorPageLocation(StatusCodeType statusCode);
-        static BodyType getErrorPageBody(StatusCodeType statusCode);
-
+        static BodyType createBody();        
         static ResponseMessageType pasteAll(StartLineType &startLine, HeaderLineType &headerLine, BodyType &body);
         
-
     private:        
 		static Response	response;
 
