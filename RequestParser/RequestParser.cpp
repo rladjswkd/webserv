@@ -471,3 +471,39 @@ Request RequestParser::httpParser(Tokens &tokens)
 
   return request;
 }
+
+Request RequestParser::startLineHeaderLineParsing(Tokens &tokens)
+{
+  Request requestNew;
+
+  request = requestNew;
+  try
+  {
+    previousErrorCheck(tokens);
+    startLineValidity(tokens);
+    headerLineValidity(tokens);
+  }
+  catch(const char *code)
+  {
+    errorHandling(code);
+  }
+
+  return request;
+}
+
+Request RequestParser::bodyLineParsing(Tokens &tokens, Request &inputRequest)
+{
+  request = inputRequest;
+
+  try
+  {
+    previousErrorCheck(tokens);
+    bodyLineValidity(tokens);
+  }
+  catch(const char *code)
+  {
+    errorHandling(code);
+  }
+
+  return request;
+}

@@ -153,7 +153,10 @@ void	RequestLexer::bodyLineTokenize(Tokens &tokens)
 	SizeType len;
 
 	len = requestMessage.length();
-	body = requestMessage.substr(2, len);
+	if (requestMessage.find(g_CRLF) == 0)
+		body = requestMessage.substr(2, len);
+	else
+		body = requestMessage;
 	tokens.push_back(std::make_pair(BODY, body));
 }
 
@@ -182,7 +185,35 @@ RequestLexer::Tokens RequestLexer::httpTokenize(std::string inputRequestMessage)
 }
 
 
+RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(std::string inputRequestMessage)
+{
+	Tokens	tokens;
 
+	requestMessage = inputRequestMessage;
+	try
+	{
+		RequestLexer::startLineTokenize(tokens);
+		RequestLexer::headerLineTokenize(tokens);
+	}
+	catch(const char *code)
+	{
+		errorHandling(tokens, code);
+	}
+	return (tokens);
+}
 
+RequestLexer::Tokens RequestLexer::bodyLineTokenize(std::string inputRequestMessage)
+{
+	Tokens	tokens;
 
-
+	requestMessage = inputRequestMessage;
+	try
+	{
+		RequestLexer::bodyLineTokenize(tokens);
+	}
+	catch(const char *code)
+	{
+		errorHandling(tokens, code);
+	}
+	return (tokens);
+}

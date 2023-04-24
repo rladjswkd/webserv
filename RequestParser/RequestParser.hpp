@@ -71,6 +71,8 @@ class RequestParser
 
   public:
     static Request httpParser(Tokens &tokens);
+    static Request startLineHeaderLineParsing(Tokens &tokens);
+    static Request bodyLineParsing(Tokens &tokens, Request &inputRequest);
 };
 
 
