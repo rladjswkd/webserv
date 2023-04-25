@@ -22,13 +22,12 @@ Location관련 함수(Location) : processLocation
      - 최종경로를 만든다.
      : 반환 response
 
-
      /y/b/c/abcd/as
 
 - 파일/디렉토리에 대한 접근 권한 확인(access 함수)
 
 - index확인(디렉토리 인 경우) 
-     - index.html이 있는지 확인(access) 
+     - index.html이 있는지 확인(access)
      - 없는데, autoindex on이면 파일 리스트를 만들어 준다.(in path, out body(page, string type))
      - 다 아니면 404 에러
      : response
