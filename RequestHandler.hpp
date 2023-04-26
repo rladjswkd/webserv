@@ -28,12 +28,12 @@ class RequestHandler
         static bool isPathAvailable(PathType path);
         static bool isPathDirectory(PathType path);
         static bool isIndexAvailable(PathType path, ArgumentList index); //index vector 순회하면서 찾아봄
-        static std::string createDirectoryListing(PathType path);
         static std::string getDirectoryList(PathType path);
 
         static std::string getFile(PathType path);
 
-            
+    public:
+        static std::string createDirectoryListing(PathType path);
 
     // public:
         // static Response processRequest(Request request, Config config);
