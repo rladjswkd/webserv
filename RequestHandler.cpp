@@ -36,13 +36,15 @@ std::string RequestHandler::getDirectoryList(PathType path)
     {
         while ((entry = readdir(dir)) != NULL) {
             directoryName = entry->d_name;
-            if (directoryName == "." || directoryName == "..")
+            if (directoryName == "." || directoryName == ".DS_Store")
                 continue;
             directoryList += "<tr> <td> ";
+            directoryList += "<a href=\"" + directoryName + "/\">";
             directoryList += directoryName;
+            directoryList += "</a>";
             directoryList += " </td> ";
             directoryList += " <td> ";
-            if (entry->d_type == DT_DIR && directoryName != "." && directoryName != "..")
+            if (entry->d_type == DT_DIR && (directoryName != "." || directoryName != ".."))
                 directoryList += "DIR";
             else
                 directoryList += "FILE";            
