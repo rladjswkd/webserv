@@ -51,7 +51,7 @@ class ResponseHandler
 		static Response	response;
 
     public:
-        static ResponseMessageType createResponseMessage(Response &inputResponseMessage);
+        static ResponseMessageType createResponseMessage(const Response &inputResponseMessage);
 };
 
 #endif
