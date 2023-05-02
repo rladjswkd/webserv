@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
+#include "ResponseHandler.hpp"
 
 void Server::generateServerSocket(SocketAddr socketAddr)
 {
@@ -115,10 +116,10 @@ void Server::handleIOEvent(FileDescriptor &epoll, const epoll_event &event)
 	if (servers.find(eventFd) != servers.end())
 		return (acceptNewClient(epoll, eventFd));
 	if (cgiClients.find(eventFd) != cgiClients.end() && eventType & EPOLLIN)	// cgi pipe
-		return (receiveData(epoll, eventFd, *(cgiClients[eventFd])));
+		return (receiveCGI(epoll, eventFd, *(cgiClients[eventFd])));
 	if (eventType & EPOLLIN)													// not cgi. http request
-		return (receiveData(epoll, eventFd, clients[eventFd]));
-	if (eventType & EPOLLOUT)													// not cgi. http request
+		return (receiveRequest(epoll, eventFd, clients[eventFd]));
+	if (eventType & EPOLLOUT && clients[eventFd].isComplete())					// not cgi. http request
 		return (sendData(epoll, eventFd));
 }
 
@@ -144,6 +145,35 @@ void Server::disconnectClient(FileDescriptor &epoll, FileDescriptor &client, con
 	clients.erase(client);
 	close(client);
 	std::cerr << reason << std::endl;
+}
+
+void Server::receiveRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+{
+	receiveData(epoll, fd, target);
+	if (target.isComplete())
+		return (processRequest(epoll, fd, target));
+}
+
+void Server::receiveCGI(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+{
+	receiveData(epoll, fd, target);
+	if (target.isComplete())
+	{
+		controlIOEvent(epoll, EPOLL_CTL_DEL, fd, EPOLLERR);
+		cgiClients.erase(fd);
+	}
+}
+
+void Server::processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+{
+	FileDescriptor	pipe = 0;
+
+	target.setResponseObject(RequestHandler::processRequest(&pipe, connection[fd], config, target.getRequestObject()));
+	if (pipe == 0)
+		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
+	controlIOEvent(epoll, EPOLL_CTL_ADD, pipe, EPOLLERR);
+	cgiClients[pipe] = &target;
+	target.setCGIState();
 }
 
 void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
