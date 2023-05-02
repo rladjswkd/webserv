@@ -16,6 +16,16 @@ void Config::setUndeclaredDirectives()
 		(it->second).setUndeclaredServerDirectives(*this);
 }
 
+Config::const_iterator Config::begin() const
+{
+    return (serverMap.begin());
+}
+
+Config::const_iterator Config::end() const
+{
+    return (serverMap.end());
+}
+
 void Config::ConfigServerContainer::addServerSubPair(ServerSubPair pair)
 {
 	serverSubMap.insert(pair);

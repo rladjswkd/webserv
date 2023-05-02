@@ -26,12 +26,15 @@ public:
 	typedef const std::string							Host, Port;
 	typedef std::pair<Host, Port>						SocketAddr;
 	typedef std::map<SocketAddr, ConfigServerContainer>	ServerMap;
+	typedef ServerMap::const_iterator					const_iterator;
 
 private:
 	ServerMap	serverMap;
 
 public:
-	void	addConfigServer(ArgumentList &serverNames, SocketAddr addr, ConfigServer configServer);
-	void	setUndeclaredDirectives();
+	void			addConfigServer(ArgumentList &serverNames, SocketAddr addr, ConfigServer configServer);
+	void			setUndeclaredDirectives();
+	const_iterator	begin() const;
+	const_iterator	end() const;
 };
 #endif
