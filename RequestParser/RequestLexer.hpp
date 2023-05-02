@@ -49,8 +49,8 @@ class RequestLexer
 		
 	public:
 		static Tokens httpTokenize(std::string inputRequestMessage);
-		static Tokens startLineHeaderLineTokenize(std::string inputRequestMessage);
-		static Tokens bodyLineTokenize(std::string inputRequestMessage);
+		static Tokens startLineHeaderLineTokenize(const std::string &inputRequestMessage);
+		static Tokens bodyLineTokenize(const std::string &inputRequestMessage);
 };
 
 #endif
