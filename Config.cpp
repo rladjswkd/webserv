@@ -54,5 +54,4 @@ void Config::ConfigServerContainer::setUndeclaredServerDirectives(const Config &
 		server.setDirectivesBase(config);
 		server.setUndeclaredLocationDirectives(server);
 	}
-		
 }
