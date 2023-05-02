@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-
+//TODO: keep-alive timeout?
 void Server::generateServerSocket(SocketAddr socketAddr)
 {
 	static struct addrinfo	hints = createaddrHints();
