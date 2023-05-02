@@ -21,8 +21,8 @@
 class Client
 {
 public:
-	typedef std::string				RequestString, Message, Host, Port;
-	typedef char *					ResponseString;
+	typedef std::string				RequestString, Buffer, Host, Port;
+	typedef const char *			ResponseString;
 	typedef std::pair<Host, Port>	SocketAddr;
 
 private:
@@ -34,24 +34,25 @@ private:
 	Response		responseObj;
 
 private:
-	void		appendEssentialPart(const Message &newRead);
-	void		appendChunked(const Message &newRead);
-	void		appendContentLength(const Message &newRead);
+	void		appendEssentialPart(const Buffer &newRead);
+	void		appendChunked(const Buffer &newRead);
+	void		appendContentLength(const Buffer &newRead);
 	void		checkMessageBodyFormat();
 	std::string	convertToString(const size_t &contentLength);
 
 public:
 	// Client(SocketAddr connectedServer);
 	const char		*getResponseMessage();
-
+	void			setResponseMessage(const Buffer &response);
 	const char		updateResponsePointer(const ssize_t &sent);
 	void			reset();
-	void			appendCGI(const Message &newRead);
-	void			appendMessage(const Message &newRead);
-	
-	void			setRequestObj(Request requestObj);
-	const Request	&getRequestObj();
-	void			setResponseObj(Response responseObj);
-	const Response	&getResponseObj();
+	void			appendCGI(const Buffer &newRead);
+	void			appendMessage(const Buffer &newRead);
+	bool			isComplete();
+	void			setCGIState();
+	// void			setRequestObj(Request requestObj);
+	const Request	&getRequestObject();
+	void			setResponseObject(Response responseObj);
+	const Response	&getResponseObject();
 };
 #endif

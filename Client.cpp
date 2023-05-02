@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <sstream>
 
-void Client::appendEssentialPart(const Message &newRead)
+void Client::appendEssentialPart(const Buffer &newRead)
 {
 	size_t  startPos = request.size() - 3;  // "3" means \r\n\r was in previous buffer and last \n is in current buffer.
 
@@ -13,7 +13,7 @@ void Client::appendEssentialPart(const Message &newRead)
 		checkMessageBodyFormat();
 }
 
-void Client::appendChunked(const Message &newRead)
+void Client::appendChunked(const Buffer &newRead)
 {
 	size_t					startPos = request.size() - 3;
 	RequestLexer::Tokens	tokens;
@@ -28,7 +28,7 @@ void Client::appendChunked(const Message &newRead)
 	}
 }
 
-void Client::appendContentLength(const Message &newRead)
+void Client::appendContentLength(const Buffer &newRead)
 {
 	static size_t			contentLength = requestObj.getContentLength();
 	RequestLexer::Tokens	tokens;
@@ -63,10 +63,10 @@ std::string Client::convertToString(const size_t &contentLength)
 	return (ss.str());
 }
 
-void Client::appendCGI(const Message &newRead)
+void Client::appendCGI(const Buffer &newRead)
 {
 	static size_t	contentLength = 0;
-	static Message	body;
+	static Buffer	body;
 
 	if (newRead.size() == 0)	// this means that client has closed its socket.
 	{
@@ -83,7 +83,7 @@ void Client::appendCGI(const Message &newRead)
 // Client::Client(SocketAddr connectedServer) : connectedServer(connectedServer)
 // { }
 
-void Client::appendMessage(const Message &newRead)
+void Client::appendMessage(const Buffer &newRead)
 {
 	switch (state)
 	{
@@ -93,25 +93,37 @@ void Client::appendMessage(const Message &newRead)
 			return (appendChunked(newRead));
 		case STATE_REQUEST_CONTENT_LENGTH:
 			return (appendContentLength(newRead));
+		case STATE_RESPONSE_CGI:
+			return (appendCGI(newRead));
 	}
 }
 
-void Client::setRequestObj(Request requestObj)
+bool Client::isComplete()
 {
-	this->requestObj = requestObj;
+	return (state == STATE_COMPLETE);
 }
 
-const Request &Client::getRequestObj()
+void Client::setCGIState()
+{
+	state = STATE_RESPONSE_CGI;
+}
+
+// void Client::setRequestObj(Request requestObj)
+// {
+// 	this->requestObj = requestObj;
+// }
+
+const Request &Client::getRequestObject()
 {
 	return (requestObj);
 }
 
-void Client::setResponseObj(Response responseObj)
+void Client::setResponseObject(Response responseObj)
 {
 	this->responseObj = responseObj;
 }
 
-const Response &Client::getResponseObj()
+const Response &Client::getResponseObject()
 {
 	return (responseObj);
 }
@@ -119,6 +131,11 @@ const Response &Client::getResponseObj()
 const char *Client::getResponseMessage()
 {
 	return (response);
+}
+
+void Client::setResponseMessage(const Buffer &response)
+{
+	this->response = response.c_str();
 }
 
 const char	Client::updateResponsePointer(const ssize_t &sent)
