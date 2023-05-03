@@ -242,6 +242,12 @@ void RequestParser::contentTypeValidity(FieldValue fieldValue, HeaderType fieldV
   }
 }
 
+void RequestParser::connectionValidity(FieldValue fieldValue)
+{
+  if (ft_toLower(trimAll(fieldValue)) == "close")
+    request.setKeepAlive(false);
+}
+
 void RequestParser::mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, HeaderType fieldValueType, FieldValue fieldValue)
 {
   if (isFieldNameSpace(fieldName))
@@ -262,6 +268,9 @@ void RequestParser::mandatoryHeaderValidity(HeaderType fieldNameType, FieldName 
       break;
     case CONTENT_TYPE:
       contentTypeValidity(fieldValue, fieldValueType);
+      break;
+    case CONNECTION:
+      connectionValidity(fieldValue);
       break;
     default:
       break;
@@ -299,6 +308,21 @@ bool RequestParser::isInMandatoryHeader(Tokens &tokens)
   return true;
 }
 
+void RequestParser::chunkedContentLengthOverlapCheck(Tokens &tokens)
+{
+  int currTokenType;
+  Tokens::iterator it = tokens.begin();
+  if (!request.getChunked()) // chunked 아니면 early return;
+    return ;
+  for (; it != tokens.end(); ++it) // chunked이고 CONTENT_LENGTH가 있는 대상은 connection을 keep-alive가 아닌 close를 처리함.
+  {
+    currTokenType = (*it).first;
+    if (currTokenType == CONTENT_LENGTH) {
+      request.setKeepAlive(false);
+    }
+  }
+}
+
 void RequestParser::headerLineValidity(Tokens &tokens)
 {
   Tokens::iterator fieldNameTokenIt, fieldValueTokenIt;
@@ -317,6 +341,7 @@ void RequestParser::headerLineValidity(Tokens &tokens)
       headerCheck(*fieldNameTokenIt, *fieldValueTokenIt);
     }
   }
+  chunkedContentLengthOverlapCheck(tokens);
 }
 
 void RequestParser::inputBodyData(Tokens &tokens)

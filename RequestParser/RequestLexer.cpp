@@ -104,6 +104,9 @@ RequestLexer::MandatoryHeaderMap RequestLexer::mandatoryHeaderInitial()
 	mandatoryHeader["cookie_value"] = COOKIE_VALUE;
 	mandatoryHeader["content-type"] = CONTENT_TYPE;
 	mandatoryHeader["multipart/form-data"] = MULTIPART_FORM_DATA;
+	mandatoryHeader["connection"] = CONNECTION;
+	mandatoryHeader["connection_value"] = CONNECTION_VALUE;
+
 
 	return mandatoryHeader;
 }

@@ -12,14 +12,16 @@
 # define TRANSFER_ENCODING        12
 # define CONTENT_LENGTH           13
 # define COOKIE                   14
-# define CONTENT_TYPE             15
+# define CONNECTION               15
+# define CONTENT_TYPE             16
 
-# define FIELDVALUE               16
-# define HOST_VALUE               17
-# define TRANSFER_ENCODING_VALUE  18
-# define CONTENT_LENGTH_VALUE     19
-# define COOKIE_VALUE             20
-# define MULTIPART_FORM_DATA      21
+# define FIELDVALUE               17
+# define HOST_VALUE               18
+# define TRANSFER_ENCODING_VALUE  19
+# define CONTENT_LENGTH_VALUE     20
+# define COOKIE_VALUE             21
+# define CONNECTION_VALUE         22
+# define MULTIPART_FORM_DATA      23
 
 # define ERROR              100
 #endif

@@ -1,7 +1,7 @@
 #include "Request.hpp"
 
 Request::Request()
-: chunked(false)
+: chunked(false), keepAlive(true)
 {
 
 }
@@ -114,7 +114,17 @@ void Request::setChunked(bool chunked)
 
 bool Request::getChunked() const
 {
-    return chunked;
+    return keepAlive;
+}
+
+void Request::setKeepAlive(bool keepAlive)
+{
+    this->keepAlive = keepAlive;
+}
+
+bool Request::getKeepAlive() const
+{
+    return keepAlive;
 }
 
 void Request::setMultipartFormDataId(MultipartFormDataIdType multipartFormDataId)
