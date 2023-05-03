@@ -33,7 +33,7 @@ void printRequest(Request request)
 	printf("host : \"%s\"\n", request.getHost().c_str());
 	printf("port : \"%s\"\n", request.getPort().c_str());
 	printf("chunked : \"%d\"\n", request.getChunked());
-	printf("contentlength : \"%d\"\n", request.getContentLength());
+	printf("contentlength : \"%lu\"\n", request.getContentLength());
 	printf("Cookie1 : %s = \"%s\"\n", (*request.getCookie().begin()).first.c_str(), (*request.getCookie().begin()).second.c_str());
 	printf("Cookie2 : %s = \"%s\"\n", ((*(++request.getCookie().begin()))).first.c_str(), (*(++request.getCookie().begin())).second.c_str());
 	printf("multitype-form-data : \"%s\"\n", request.getMultipartFormDataId().c_str());

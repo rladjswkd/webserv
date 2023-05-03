@@ -67,7 +67,7 @@ void Request::setTransferEncoding(FieldValueListType transferEncoding) {
     this->transferEncoding.swap(transferEncoding);
 }
 
-uint32_t Request::getContentLength() const {
+size_t Request::getContentLength() const {
     return contentLength;
 }
 

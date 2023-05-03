@@ -196,8 +196,8 @@ void RequestParser::contentLengthValidity(FieldValue fieldValue)
   if (!contentLengthValue.size())
     return ;
   Request::FieldValueListType::iterator it = contentLengthValue.begin();
-  uint32_t contentLength = 0;
-  uint32_t checkNum = atoi((*it).c_str());
+  size_t contentLength = 0;
+  size_t checkNum = atoi((*it).c_str());
 
   for (; it != contentLengthValue.end(); ++it)
   {

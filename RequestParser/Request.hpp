@@ -56,7 +56,7 @@ class Request
 		HeaderFieldsMap getHeaderFields() const;
 		HostType getHost() const;
 		FieldValueListType getTransferEncoding() const;
-		uint32_t getContentLength() const;
+		size_t getContentLength() const;
 		CookieType getCookie() const;
 		std::string getBody() const;
 		std::string getErrorCode() const;
