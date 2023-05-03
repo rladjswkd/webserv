@@ -114,7 +114,7 @@ void Request::setChunked(bool chunked)
 
 bool Request::getChunked() const
 {
-    return keepAlive;
+    return chunked;
 }
 
 void Request::setKeepAlive(bool keepAlive)

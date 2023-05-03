@@ -174,18 +174,16 @@ void RequestParser::transferEncodingValidity(FieldValue fieldValue)
     currStr = trimAll((*it));
     if (cnt == 1 && currStr == "chunked") //처음에 오면 괜찮음.
       chunked = 1;
-    
     if (chunked == 0 && (cnt > 1 && cnt < len)) // 중간에 chunked 나오면 에러처리
       throwError("400", "chunked syntax error!");
-
     if (chunked == 1 && cnt > 1 && currStr.length() > 0) //chunked가 1개가 아니거나, chunked이후에 다른 것이 나오면 문법오류
       throwError("400", "chunked syntax error!");
-    
     if (chunked == 0 && cnt == len && currStr == "chunked") //마지막에 chunked있으면 ok
       chunked = 1;
   }
   if (chunked == 1)
     request.setChunked(true);
+  std::cout << "chunked Test : " << request.getChunked() << std::endl;
   request.setTransferEncoding(transferEncodingValue);
 }
 
@@ -342,6 +340,7 @@ void RequestParser::headerLineValidity(Tokens &tokens)
     }
   }
   chunkedContentLengthOverlapCheck(tokens);
+  std::cout << "chunked Test : " << request.getChunked() << std::endl;
 }
 
 void RequestParser::inputBodyData(Tokens &tokens)
@@ -376,7 +375,8 @@ double RequestParser::chunkedLengthConvert(std::string str)
 {
   char *end;
   double num = strtol(str.c_str(), &end, 16);
-  if (num == 0 && end == str)
+  
+  if (*end != '\0' && *end != ';')
     throwError("400", "chunked body number syntax error!");
   return num;
 }
@@ -512,7 +512,6 @@ Request RequestParser::startLineHeaderLineParsing(Tokens &tokens)
   {
     errorHandling(code);
   }
-
   return request;
 }
 
