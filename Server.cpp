@@ -161,6 +161,7 @@ void Server::receiveCGI(FileDescriptor &epoll, FileDescriptor &fd, Client &targe
 	{
 		controlIOEvent(epoll, EPOLL_CTL_DEL, fd, EPOLLERR);
 		cgiClients.erase(fd);
+		waitChildProcessNonblocking();
 	}
 }
 
@@ -198,6 +199,12 @@ void Server::receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &targ
 	if (received == 0)
 		return (disconnectClient(epoll, fd, DISCONNECTION_MESSAGE)); //TODO: 5xx server error?
 	target.appendMessage(buffer);
+}
+
+void Server::waitChildProcessNonblocking()
+{
+	while (waitpid(0, 0, WNOHANG) == 0)
+	{ }
 }
 
 Server::Server(const Config config) : config(config)

@@ -60,6 +60,7 @@ private:
 	void			processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
 	void			sendData(FileDescriptor &epoll, FileDescriptor &client);
 	void			receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
+	void			waitChildProcessNonblocking();
 
 public:
 	Server(const Config config);
