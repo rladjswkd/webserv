@@ -42,6 +42,7 @@ private:
 
 public:
 	// Client(SocketAddr connectedServer);
+	Client();
 	const char		*getResponseMessage();
 	void			setResponseMessage(const Buffer &response);
 	const char		updateResponsePointer(const ssize_t &sent);
