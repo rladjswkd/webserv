@@ -32,14 +32,16 @@ void Client::appendChunked(const Buffer &newRead)
 
 void Client::appendContentLength(const Buffer &newRead)
 {
-	static size_t			contentLength = requestObj.getContentLength();
+	static size_t			contentLength = 0;
 	RequestLexer::Tokens	tokens;
 
+	contentLength += newRead.size();
 	request.append(newRead);
 	if (request.size() >= contentLength)
 	{
 		tokens = RequestLexer::bodyLineTokenize(request);
 		RequestParser::bodyLineParsing(tokens, requestObj);
+		contentLength = 0;
 		state = STATE_COMPLETE;
 	}
 }
