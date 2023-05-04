@@ -31,11 +31,16 @@ protected:
 
 public:
 	BaseBlock();
-	void	setErrorPage(ErrorCode code, ErrorPage page);	// default : default error page for each error code
-	void	setClientMaxBodySize(size_t arg); 			// default : 1000000
-	void	setAutoIndex(bool arg);						// default : off
-	void	setIndex(ArgumentList list);					// default : index.html
-	void	setDirectivesBase(const BaseBlock &other);
+	void				setErrorPage(ErrorCode code, ErrorPage page);	// default : default error page for each error code
+	void				setClientMaxBodySize(size_t arg); 			// default : 1000000
+	void				setAutoIndex(bool arg);						// default : off
+	void				setIndex(ArgumentList list);					// default : index.html
+	void				setDirectivesBase(const BaseBlock &other);
+	
+	size_t				getClientMaxBodySize();
+	bool				isAutoIndexOn();
+	const ArgumentList	&getIndex();
+	const ErrorPageMap	&getErrorPage();
 };
 
 class InterBlock : public BaseBlock
@@ -44,7 +49,10 @@ protected:
 	ArgumentList	redirect;
 
 public:
-	void	setRedirect(ArgumentList list);		// no default value
-	void	setDirectivesInter(const InterBlock &other);
+	void				setRedirect(ArgumentList list);		// no default value
+	void				setDirectivesInter(const InterBlock &other);
+
+	bool				hasRedirect();
+	const ArgumentList	&getRedirect();
 };
 #endif
