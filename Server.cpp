@@ -181,7 +181,7 @@ void Server::processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &t
 
 void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
 {
-	Client		target = clients[client];
+	Client		&target = clients[client];
 	const char	*response = target.getResponseMessage();
 	ssize_t		sent = send(client, response, std::strlen(response), 0);
 

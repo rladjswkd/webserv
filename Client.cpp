@@ -4,6 +4,9 @@
 #include <stdexcept>
 #include <sstream>
 
+Client::Client() : state(STATE_REQUEST_FIELD_LINE), response("")
+{ }
+
 void Client::appendEssentialPart(const Buffer &newRead)
 {
 	size_t  startPos = request.size() - 3;  // "3" means \r\n\r was in previous buffer and last \n is in current buffer.
@@ -23,22 +26,19 @@ void Client::appendChunked(const Buffer &newRead)
 	{
 		tokens = RequestLexer::bodyLineTokenize(request);
 		RequestParser::bodyLineParsing(tokens, requestObj);
-		request.clear();
 		state = STATE_COMPLETE;
 	}
 }
 
 void Client::appendContentLength(const Buffer &newRead)
 {
-	static size_t			contentLength = requestObj.getContentLength();
 	RequestLexer::Tokens	tokens;
 
 	request.append(newRead);
-	if (request.size() >= contentLength)
+	if (request.size() >= requestObj.getContentLength())
 	{
 		tokens = RequestLexer::bodyLineTokenize(request);
 		RequestParser::bodyLineParsing(tokens, requestObj);
-		request.clear();
 		state = STATE_COMPLETE;
 	}
 }
@@ -52,7 +52,8 @@ void Client::checkMessageBodyFormat()
 		state = STATE_REQUEST_CHUNKED;
 	else if (requestObj.getContentLength())
 		state = STATE_REQUEST_CONTENT_LENGTH;
-	request.clear();
+	else
+		state = STATE_COMPLETE;
 }
 
 std::string Client::convertToString(const size_t &contentLength)
