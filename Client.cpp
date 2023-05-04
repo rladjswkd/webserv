@@ -26,7 +26,6 @@ void Client::appendChunked(const Buffer &newRead)
 	{
 		tokens = RequestLexer::bodyLineTokenize(request);
 		RequestParser::bodyLineParsing(tokens, requestObj);
-		request.clear();
 		state = STATE_COMPLETE;
 	}
 }
@@ -41,7 +40,6 @@ void Client::appendContentLength(const Buffer &newRead)
 	{
 		tokens = RequestLexer::bodyLineTokenize(request);
 		RequestParser::bodyLineParsing(tokens, requestObj);
-		request.clear();
 		state = STATE_COMPLETE;
 	}
 }
@@ -55,7 +53,8 @@ void Client::checkMessageBodyFormat()
 		state = STATE_REQUEST_CHUNKED;
 	else if (requestObj.getContentLength())
 		state = STATE_REQUEST_CONTENT_LENGTH;
-	request.clear();
+	else
+		state = STATE_COMPLETE;
 }
 
 std::string Client::convertToString(const size_t &contentLength)
