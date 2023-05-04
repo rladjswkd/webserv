@@ -35,7 +35,7 @@ ResponseHandler::StartLineType ResponseHandler::createStartLine()
 
 ResponseHandler::DateType ResponseHandler::getCurrentTime() {
     DateType currentTime;
-    time_t now = time(nullptr);
+    time_t now = time(0);
 
     char buffer[80];
     struct tm* timeinfo = gmtime(&now);
@@ -59,7 +59,7 @@ ResponseHandler::ContentLengthType ResponseHandler::getContentLength()
 
 ResponseHandler::DateType ResponseHandler::getCookieTime() {
     DateType cookieTime;
-    time_t now = time(nullptr) + COOKIE_VALID_TIME * 60 * 60;
+    time_t now = time(0) + COOKIE_VALID_TIME * 60 * 60;
 
     char buffer[80];
     struct tm* timeinfo = gmtime(&now);
@@ -174,7 +174,7 @@ ResponseHandler::ResponseMessageType ResponseHandler::createNormalMessage()
 ResponseHandler::BodyType ResponseHandler::getErrorPageBody()
 {
     std::string fileLocation = ERROR_PAGE_LOCATION + response.getStatusCode() + ".html";
-    std::ifstream file(fileLocation);
+    std::ifstream file(fileLocation.c_str());
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
@@ -192,7 +192,7 @@ ResponseHandler::ResponseMessageType ResponseHandler::createErrorMessage()
     return errorMessage;
 }
 
-ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(Response &inputResponseMessage)
+ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(const Response &inputResponseMessage)
 {
     ResponseMessageType outputResponseMessage;
     

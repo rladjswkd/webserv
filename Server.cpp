@@ -8,7 +8,10 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-//TODO: keep-alive timeout?
+#include <sys/types.h>
+#include <sys/wait.h>
+#include "ResponseHandler.hpp"
+
 void Server::generateServerSocket(SocketAddr socketAddr)
 {
 	static struct addrinfo	hints = createaddrHints();
@@ -47,7 +50,7 @@ addrinfo Server::createaddrHints()
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
-	return(hints);
+	return (hints);
 }
 
 void Server::throwException(addrinfo *info)
@@ -115,10 +118,10 @@ void Server::handleIOEvent(FileDescriptor &epoll, const epoll_event &event)
 	if (servers.find(eventFd) != servers.end())
 		return (acceptNewClient(epoll, eventFd));
 	if (cgiClients.find(eventFd) != cgiClients.end() && eventType & EPOLLIN)	// cgi pipe
-		return (receiveData(epoll, eventFd, *(cgiClients[eventFd])));
+		return (receiveCGI(epoll, eventFd, *(cgiClients[eventFd])));
 	if (eventType & EPOLLIN)													// not cgi. http request
-		return (receiveData(epoll, eventFd, clients[eventFd]));
-	if (eventType & EPOLLOUT)													// not cgi. http request
+		return (receiveRequest(epoll, eventFd, clients[eventFd]));
+	if (eventType & EPOLLOUT && clients[eventFd].isComplete())					// not cgi. http request
 		return (sendData(epoll, eventFd));
 }
 
@@ -146,6 +149,36 @@ void Server::disconnectClient(FileDescriptor &epoll, FileDescriptor &client, con
 	std::cerr << reason << std::endl;
 }
 
+void Server::receiveRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+{
+	receiveData(epoll, fd, target);
+	if (target.isComplete())
+		return (processRequest(epoll, fd, target));
+}
+
+void Server::receiveCGI(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+{
+	receiveData(epoll, fd, target);
+	if (target.isComplete())
+	{
+		controlIOEvent(epoll, EPOLL_CTL_DEL, fd, EPOLLERR);
+		cgiClients.erase(fd);
+		waitChildProcessNonblocking();
+	}
+}
+
+void Server::processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+{
+	FileDescriptor	pipe = 0;
+
+	target.setResponseObject(RequestHandler::processRequest(&pipe, connection[fd], config, target.getRequestObject()));
+	if (pipe == 0)
+		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
+	controlIOEvent(epoll, EPOLL_CTL_ADD, pipe, EPOLLIN);
+	cgiClients[pipe] = &target;
+	target.setCGIState();
+}
+
 void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
 {
 	Client		&target = clients[client];
@@ -154,8 +187,8 @@ void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
 
 	if (sent < 0)
 		return (disconnectClient(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	if (target.updateResponsePointer(sent) == 0)
-		target.reset();
+	if (target.updateResponsePointer(sent) == CHAR_NULL)
+		target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
 }
 
 void Server::receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
@@ -168,6 +201,12 @@ void Server::receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &targ
 	if (received == 0)
 		return (disconnectClient(epoll, fd, DISCONNECTION_MESSAGE)); //TODO: 5xx server error?
 	target.appendMessage(buffer);
+}
+
+void Server::waitChildProcessNonblocking()
+{
+	while (waitpid(0, 0, WNOHANG) == 0)
+	{ }
 }
 
 Server::Server(const Config config) : config(config)

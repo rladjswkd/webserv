@@ -15,7 +15,7 @@
 # define ASTERISK_NUMERIC_STR			NULL
 # define MAX_EVENT_COUNT				10
 # define BUFFER_SIZE					8000
-
+# define CHAR_NULL						'\0'
 # define RECV_EXCEPTION_MESSAGE			"recv() ERROR!"
 # define SEND_EXCEPTION_MESSAGE			"send() ERROR!"
 # define DISCONNECTION_MESSAGE			"CLIENT DISCONNECTED!"
@@ -30,8 +30,8 @@ public:
 	typedef std::string								Host, ErrorMessage;
 	typedef std::map<FileDescriptor, SocketAddr>	ServerMap;
 	typedef std::map<FileDescriptor, Client>		ClientMap;
-	typedef std::map<FileDescriptor, SocketAddr*>	ConnectionMap; // client file descriptor - connected server address info
-	typedef std::map<FileDescriptor, Client*>		CGIClientMap;
+	typedef std::map<FileDescriptor, SocketAddr*>	ConnectionMap;	// client file descriptor - connected server address info
+	typedef std::map<FileDescriptor, Client*>		CGIClientMap;	// FileDescriptor is pipe file descriptor
 
 private:
 	const Config	config;
@@ -55,8 +55,12 @@ private:
 	void			handleIOEvent(FileDescriptor &epoll, const epoll_event &event);
 	void			acceptNewClient(FileDescriptor &epoll, const FileDescriptor &server);
 	void			disconnectClient(FileDescriptor &epoll, FileDescriptor &client, const char *reason);
+	void			receiveRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
+	void			receiveCGI(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
+	void			processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
 	void			sendData(FileDescriptor &epoll, FileDescriptor &client);
 	void			receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
+	void			waitChildProcessNonblocking();
 
 public:
 	Server(const Config config);
