@@ -174,13 +174,10 @@ void RequestParser::transferEncodingValidity(FieldValue fieldValue)
     currStr = trimAll((*it));
     if (cnt == 1 && currStr == "chunked") //처음에 오면 괜찮음.
       chunked = 1;
-    
     if (chunked == 0 && (cnt > 1 && cnt < len)) // 중간에 chunked 나오면 에러처리
       throwError("400", "chunked syntax error!");
-
     if (chunked == 1 && cnt > 1 && currStr.length() > 0) //chunked가 1개가 아니거나, chunked이후에 다른 것이 나오면 문법오류
       throwError("400", "chunked syntax error!");
-    
     if (chunked == 0 && cnt == len && currStr == "chunked") //마지막에 chunked있으면 ok
       chunked = 1;
   }
@@ -196,8 +193,8 @@ void RequestParser::contentLengthValidity(FieldValue fieldValue)
   if (!contentLengthValue.size())
     return ;
   Request::FieldValueListType::iterator it = contentLengthValue.begin();
-  uint32_t contentLength = 0;
-  uint32_t checkNum = atoi((*it).c_str());
+  size_t contentLength = 0;
+  size_t checkNum = atoi((*it).c_str());
 
   for (; it != contentLengthValue.end(); ++it)
   {
@@ -242,6 +239,12 @@ void RequestParser::contentTypeValidity(FieldValue fieldValue, HeaderType fieldV
   }
 }
 
+void RequestParser::connectionValidity(FieldValue fieldValue)
+{
+  if (ft_toLower(trimAll(fieldValue)) == "close")
+    request.setKeepAlive(false);
+}
+
 void RequestParser::mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, HeaderType fieldValueType, FieldValue fieldValue)
 {
   if (isFieldNameSpace(fieldName))
@@ -262,6 +265,9 @@ void RequestParser::mandatoryHeaderValidity(HeaderType fieldNameType, FieldName 
       break;
     case CONTENT_TYPE:
       contentTypeValidity(fieldValue, fieldValueType);
+      break;
+    case CONNECTION:
+      connectionValidity(fieldValue);
       break;
     default:
       break;
@@ -299,6 +305,21 @@ bool RequestParser::isInMandatoryHeader(Tokens &tokens)
   return true;
 }
 
+void RequestParser::chunkedContentLengthOverlapCheck(Tokens &tokens)
+{
+  int currTokenType;
+  Tokens::iterator it = tokens.begin();
+  if (!request.getChunked()) // chunked 아니면 early return;
+    return ;
+  for (; it != tokens.end(); ++it) // chunked이고 CONTENT_LENGTH가 있는 대상은 connection을 keep-alive가 아닌 close를 처리함.
+  {
+    currTokenType = (*it).first;
+    if (currTokenType == CONTENT_LENGTH) {
+      request.setKeepAlive(false);
+    }
+  }
+}
+
 void RequestParser::headerLineValidity(Tokens &tokens)
 {
   Tokens::iterator fieldNameTokenIt, fieldValueTokenIt;
@@ -317,6 +338,7 @@ void RequestParser::headerLineValidity(Tokens &tokens)
       headerCheck(*fieldNameTokenIt, *fieldValueTokenIt);
     }
   }
+  chunkedContentLengthOverlapCheck(tokens);
 }
 
 void RequestParser::inputBodyData(Tokens &tokens)
@@ -351,7 +373,8 @@ double RequestParser::chunkedLengthConvert(std::string str)
 {
   char *end;
   double num = strtol(str.c_str(), &end, 16);
-  if (num == 0 && end == str)
+  
+  if (*end != '\0' && *end != ';')
     throwError("400", "chunked body number syntax error!");
   return num;
 }
@@ -487,7 +510,6 @@ Request RequestParser::startLineHeaderLineParsing(Tokens &tokens)
   {
     errorHandling(code);
   }
-
   return request;
 }
 

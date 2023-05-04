@@ -45,6 +45,7 @@ class RequestParser
     static void contentLengthValidity(FieldValue fieldValue);
     static void cookieValidity(FieldValue fieldValue);
     static void contentTypeValidity(FieldValue fieldValue, HeaderType fieldValueType);
+    static void connectionValidity(FieldValue fieldValue);
     static void extractMultipartFormDataId(FieldValue fieldValue);
     static bool isFieldNameSpace(FieldName fieldName);
     static void hostPortCheck(Port port);
@@ -59,6 +60,7 @@ class RequestParser
     static void multipartFormDataIdProcess();
     static std::string ft_toLower(std::string str);
     static std::string getBodyLine();
+    static void chunkedContentLengthOverlapCheck(Tokens &tokens);
 
   private:	// constants
 		static const Method	METHOD;

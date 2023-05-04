@@ -1,7 +1,7 @@
 #include "Request.hpp"
 
 Request::Request()
-: chunked(false)
+: chunked(false), keepAlive(true)
 {
 
 }
@@ -67,7 +67,7 @@ void Request::setTransferEncoding(FieldValueListType transferEncoding) {
     this->transferEncoding.swap(transferEncoding);
 }
 
-uint32_t Request::getContentLength() const {
+size_t Request::getContentLength() const {
     return contentLength;
 }
 
@@ -115,6 +115,16 @@ void Request::setChunked(bool chunked)
 bool Request::getChunked() const
 {
     return chunked;
+}
+
+void Request::setKeepAlive(bool keepAlive)
+{
+    this->keepAlive = keepAlive;
+}
+
+bool Request::getKeepAlive() const
+{
+    return keepAlive;
 }
 
 void Request::setMultipartFormDataId(MultipartFormDataIdType multipartFormDataId)

@@ -38,6 +38,7 @@ class Request
 		PortType	port;
 		FieldValueListType	transferEncoding;
 		bool				chunked;					// chunked가 포함되어 있는지 여부(default=false)
+		bool				keepAlive;					// keep-alive의 on-off 여부(default=true)
 		ContentLengthType	contentLength;
 		CookieType			cookie;
 		MultipartFormDataIdType multipartFormDataId; //upload시 사용됨. 이 id를 기준으로 계속 데이터가 들어옴.
@@ -56,12 +57,13 @@ class Request
 		HeaderFieldsMap getHeaderFields() const;
 		HostType getHost() const;
 		FieldValueListType getTransferEncoding() const;
-		uint32_t getContentLength() const;
+		size_t getContentLength() const;
 		CookieType getCookie() const;
 		std::string getBody() const;
 		std::string getErrorCode() const;
 		PortType	getPort() const;
 		bool	getChunked() const;
+		bool	getKeepAlive() const;
 		MultipartFormDataIdType getMultipartFormDataId() const;
 		QueryStringMapType getQueryStringMap() const;
 
@@ -78,6 +80,7 @@ class Request
 		void setErrorCode(std::string errorCode);
 		void setPort(PortType port);
 		void setChunked(bool chunked);
+		void setKeepAlive(bool chunked);
 		void setMultipartFormDataId(MultipartFormDataIdType multipartFormDataId);
 		void setQueryStringMap(std::string key, std::string value);
 	
