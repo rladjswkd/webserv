@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "ResponseHandler.hpp"
 
 void Server::generateServerSocket(SocketAddr socketAddr)
@@ -48,7 +50,7 @@ addrinfo Server::createaddrHints()
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
-	return(hints);
+	return (hints);
 }
 
 void Server::throwException(addrinfo *info)
@@ -172,7 +174,7 @@ void Server::processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &t
 	target.setResponseObject(RequestHandler::processRequest(&pipe, connection[fd], config, target.getRequestObject()));
 	if (pipe == 0)
 		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
-	controlIOEvent(epoll, EPOLL_CTL_ADD, pipe, EPOLLERR);
+	controlIOEvent(epoll, EPOLL_CTL_ADD, pipe, EPOLLIN);
 	cgiClients[pipe] = &target;
 	target.setCGIState();
 }
@@ -185,8 +187,8 @@ void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
 
 	if (sent < 0)
 		return (disconnectClient(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	if (target.updateResponsePointer(sent) == 0)
-		target.reset();
+	if (target.updateResponsePointer(sent) == CHAR_NULL)
+		target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
 }
 
 void Server::receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &target)

@@ -15,7 +15,7 @@
 # define ASTERISK_NUMERIC_STR			NULL
 # define MAX_EVENT_COUNT				10
 # define BUFFER_SIZE					8000
-
+# define CHAR_NULL						'\0'
 # define RECV_EXCEPTION_MESSAGE			"recv() ERROR!"
 # define SEND_EXCEPTION_MESSAGE			"send() ERROR!"
 # define DISCONNECTION_MESSAGE			"CLIENT DISCONNECTED!"
