@@ -185,7 +185,7 @@ RequestLexer::Tokens RequestLexer::httpTokenize(std::string inputRequestMessage)
 }
 
 
-RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(std::string inputRequestMessage)
+RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(const std::string &inputRequestMessage)
 {
 	Tokens	tokens;
 
@@ -202,7 +202,7 @@ RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(std::string input
 	return (tokens);
 }
 
-RequestLexer::Tokens RequestLexer::bodyLineTokenize(std::string inputRequestMessage)
+RequestLexer::Tokens RequestLexer::bodyLineTokenize(const std::string &inputRequestMessage)
 {
 	Tokens	tokens;
 
