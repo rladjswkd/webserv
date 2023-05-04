@@ -183,7 +183,6 @@ void RequestParser::transferEncodingValidity(FieldValue fieldValue)
   }
   if (chunked == 1)
     request.setChunked(true);
-  std::cout << "chunked Test : " << request.getChunked() << std::endl;
   request.setTransferEncoding(transferEncodingValue);
 }
 
@@ -340,7 +339,6 @@ void RequestParser::headerLineValidity(Tokens &tokens)
     }
   }
   chunkedContentLengthOverlapCheck(tokens);
-  std::cout << "chunked Test : " << request.getChunked() << std::endl;
 }
 
 void RequestParser::inputBodyData(Tokens &tokens)
