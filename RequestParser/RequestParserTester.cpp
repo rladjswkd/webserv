@@ -18,7 +18,7 @@ void printRequest(Request request)
 {
 	if (request.getErrorCode().size() > 0)
 		return ;
-	printf("method : \"%d\"\n", request.getMethod());
+	printf("method : \"%s\"\n", request.getMethod().c_str());
 	printf("uri : \"%s\"\n", request.getUriPath().c_str());
 	printf("queryString : \"%s\"\n", request.getQueryString().c_str());
 	Request::QueryStringMapType queryStringMap = request.getQueryStringMap();

@@ -36,7 +36,7 @@ class RequestParser
     static bool isQueryString(std::string str);
     static void queryStringSyntaxCheck(std::string queryString);
     static bool isHttpVersion(std::string str);
-    static Request::method_enum  settingMethod(std::string str);
+    static Request::MethodType  settingMethod(std::string str);
     static void headerCheck(Token &fieldNameToken, Token &fieldValueToken);
     static void mandatoryHeaderValidity(HeaderType fieldNameType, FieldName fieldName, HeaderType fieldValueType, FieldValue fieldValue);
     static void nonMandatoryHeaderValidity(FieldName fieldName, FieldValue fieldValue);

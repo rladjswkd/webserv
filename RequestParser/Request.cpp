@@ -6,11 +6,11 @@ Request::Request()
 
 }
 
-Request::method_enum Request::getMethod() const {
+Request::MethodType Request::getMethod() const {
     return method;
 }
 
-void Request::setMethod(method_enum method) {
+void Request::setMethod(MethodType method) {
     this->method = method;
 }
 

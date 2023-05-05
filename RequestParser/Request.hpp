@@ -14,19 +14,12 @@ class Request
 		typedef std::string							HostType, MultipartFormDataIdType, PortType;
 		typedef std::list<std::string>				FieldValueListType, ChunkedListType, MultipartFormDataIdListType, UriListType;
 		typedef size_t								ContentLengthType;
-
-		enum	method_enum
-		{
-			GET = 0,
-			POST = 1,
-			DELETE = 2
-		};
-
+		typedef std::string						MethodType;
 		Request();
 
 	private:
 		//start line
-		method_enum	method;
+		MethodType	method;
 		std::string	uriPath;
 		std::string	queryString;
 		QueryStringMapType queryStringMap;
@@ -50,7 +43,7 @@ class Request
 		std::string errorCode;
 
 	public:
-		method_enum getMethod() const;
+		MethodType  getMethod() const;
 		std::string getUriPath() const ;
 		std::string getQueryString() const;
 		std::string getHttpVersion() const;
@@ -67,7 +60,7 @@ class Request
 		MultipartFormDataIdType getMultipartFormDataId() const;
 		QueryStringMapType getQueryStringMap() const;
 
-		void setMethod(method_enum method);
+		void setMethod(MethodType method);
 		void setUriPath(std::string uriPath);
 		void setQueryString(std::string queryString);
 		void setHttpVersion(std::string httpVersion);
