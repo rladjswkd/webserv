@@ -2,6 +2,14 @@
 
 Response ResponseHandler::response;
 
+std::string ResponseHandler::ft_toLower(std::string str)
+{
+  for (unsigned int i = 0; i < str.length(); i++) {
+    str[i] = std::tolower(str[i]);
+  }
+	return str;
+}
+
 bool ResponseHandler::isErrorStatusCode()
 {
     Response::StatusCodeType statusCode = response.getStatusCode();
@@ -57,41 +65,12 @@ ResponseHandler::ContentLengthType ResponseHandler::getContentLength()
     return sizet_to_string(response.getBody().length());
 }
 
-ResponseHandler::DateType ResponseHandler::getCookieTime() {
-    DateType cookieTime;
-    time_t now = time(0) + COOKIE_VALID_TIME * 60 * 60;
-
-    char buffer[80];
-    struct tm* timeinfo = gmtime(&now);
-    strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S GMT", timeinfo);
-    cookieTime = std::string(buffer);
-
-    return cookieTime;
-}
-
-bool ResponseHandler::isSession(std::string key)
-{
-    if (key == SESSION_ID)
-        return true;
-    return false;
-}
-
 ResponseHandler::CookieStringType ResponseHandler::getCookieString()
 {
-    ResponseHandler::CookieStringType cookieString;
-    Response::CookieType cookieMap = response.getCookie();
-    Response::CookieType::iterator it = cookieMap.begin();
-
-    for(; it != cookieMap.end(); ++it)
-    {
-        cookieString += "Set-Cookie: ";
-        cookieString += (*it).first;
-        cookieString += "=";
-        cookieString += (*it).second;
-        if (!isSession((*it).first))
-            cookieString += ("; expires=" + getCookieTime());
+    ResponseHandler::CookieStringType cookieString = "";
+    cookieString = response.getCookie();
+    if (cookieString.size() > 0)
         cookieString += CRLF;
-    }
     return cookieString;
 }
 
@@ -115,7 +94,7 @@ ResponseHandler::RedirectLocationType ResponseHandler::createRedirectLocation()
 
 bool ResponseHandler::isKeepAlive()
 {
-    return response.getKeepAlive();
+    return response.isKeepAlive();
 }
 
 ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive()
@@ -141,7 +120,6 @@ ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
     headerLine += CRLF;
 
     //content_type
-    headerLine += "Content-Type: ";
     headerLine += response.getContentType();
     headerLine += CRLF;
 
@@ -222,4 +200,47 @@ ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(cons
     else
         outputResponseMessage = createErrorMessage();
     return outputResponseMessage; 
+}
+
+
+bool ResponseHandler::isSetCookieHeader(std::string str)
+{
+    return (ft_toLower(str).find("set-cookie: ") == 0);
+}
+
+bool ResponseHandler::isContentTypeHeader(std::string str)
+{
+    return (ft_toLower(str).find("content-type: ") == 0);
+}
+
+void ResponseHandler::cgiBodySetting(Response &inputResponse)
+{
+    std::string::size_type pos;
+    std::string cgiBody = inputResponse.getBody();
+
+    pos = cgiBody.find("\r\n\r\n");
+    if (pos != std::string::npos)
+        inputResponse.setBody(cgiBody.substr(pos + 4, cgiBody.size()));
+}
+
+void ResponseHandler::cgiMessageParsing(Response &inputResponse)
+{
+    std::string cgiBody = inputResponse.getBody();
+    std::stringstream ss(cgiBody);
+    std::string temp, currentCookie;
+ 
+    while (getline(ss, temp, '\r')) {
+      if (isSetCookieHeader(temp))
+      {
+        currentCookie = inputResponse.getCookie();
+        if (currentCookie.size() > 0)
+            currentCookie += CRLF;
+        currentCookie += temp;
+        inputResponse.setCookie(currentCookie);
+      }
+      else if(isContentTypeHeader(temp))
+        inputResponse.setContentType(temp);
+      ss.get();
+    }
+    cgiBodySetting(inputResponse);
 }

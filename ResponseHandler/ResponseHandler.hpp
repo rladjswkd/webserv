@@ -27,6 +27,7 @@ class ResponseHandler
         typedef std::map<std::string, std::string> StatusTextMapType, ErrorPageLocationMapType;
 
     private:
+        static std::string ft_toLower(std::string str);
         static bool isErrorStatusCode();
         static ResponseMessageType createNormalMessage();
         static ResponseMessageType createErrorMessage();
@@ -39,9 +40,7 @@ class ResponseHandler
         static DateType getCurrentTime();
         static ContentLengthType getContentLength();
         static std::string sizet_to_string(size_t value);
-        static bool isSession(std::string key);
         static CookieStringType getCookieString();
-        static DateType getCookieTime();
         static bool isRedirectStatusCode();
         static RedirectLocationType createRedirectLocation();
         static bool isKeepAlive();
@@ -49,11 +48,16 @@ class ResponseHandler
 
         static BodyType createBody();        
         static ResponseMessageType pasteAll(StartLineType &startLine, HeaderLineType &headerLine, BodyType &body);
+
+        static bool isSetCookieHeader(std::string str);
+        static bool isContentTypeHeader(std::string str);
+        static void cgiBodySetting(Response &inputResponse);
         
     private:        
 		static Response	response;
 
     public:
+        static void cgiMessageParsing(Response &inputResponse);
         static ResponseMessageType createResponseMessage(const Response &inputResponseMessage);
 };
 

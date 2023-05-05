@@ -1,7 +1,7 @@
 #include "Response.hpp"
 
 Response::Response()
-: contentType("TEXT_HTML"), keepAlive(true)
+: contentType("Content-Type: text/html"), cookie(""), keepAlive(true)
 {
 
 }
@@ -66,17 +66,17 @@ void Response::setLocation(std::string location)
     this->location = location;
 }
 
-Response::CookieType Response::getCookie()
+std::string Response::getCookie()
 {
     return this->cookie;
 }
 
-void Response::setCookie(std::string key, std::string value)
+void Response::setCookie(std::string cookie)
 {
-    this->cookie[key] = value;
+    this->cookie = cookie;
 }
 
-bool Response::getKeepAlive()
+bool Response::isKeepAlive()
 {
     return this->keepAlive;    
 }

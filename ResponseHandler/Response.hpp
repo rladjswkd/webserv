@@ -7,7 +7,6 @@
 class Response
 {
     public:
-        typedef std::map<std::string, std::string>  CookieType;
         typedef std::string StatusCodeType;
         Response();
 
@@ -18,7 +17,7 @@ class Response
         std::string body;
         std::string date;
         std::string location;
-        CookieType  cookie;
+        std::string cookie;
         bool        keepAlive;
 
     public:
@@ -28,8 +27,8 @@ class Response
         std::string getBody();
         std::string getDate();
         std::string getLocation();
-        CookieType  getCookie();
-        bool        getKeepAlive();
+        std::string getCookie();
+        bool        isKeepAlive();
 
         void setStatusCode(std::string statusCode);
         void setContentLength(std::string contentLength);
@@ -37,7 +36,7 @@ class Response
         void setBody(std::string body);
         void setDate(std::string date);
         void setLocation(std::string location);
-        void setCookie(std::string key, std::string value); 
+        void setCookie(std::string cookie); 
         void setKeepAlive(bool keepAlive);
 };
 
