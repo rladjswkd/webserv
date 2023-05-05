@@ -113,6 +113,23 @@ ResponseHandler::RedirectLocationType ResponseHandler::createRedirectLocation()
     return redirectLocation;
 }
 
+bool ResponseHandler::isKeepAlive()
+{
+    return response.getKeepAlive();
+}
+
+ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive()
+{
+    std::string connection;
+
+    if (isKeepAlive())
+        connection = "Connection: Keep-Alive";
+    else
+        connection = "Connection: close";
+    connection += CRLF;
+    return connection;
+}
+
 ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
 {
     HeaderLineType headerLine = "";
@@ -125,7 +142,7 @@ ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
 
     //content_type
     headerLine += "Content-Type: ";
-    headerLine += TEXT_HTML;
+    headerLine += response.getContentType();
     headerLine += CRLF;
 
     //content-length
@@ -139,6 +156,9 @@ ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
     //redirection
     if (isRedirectStatusCode())
         headerLine += createRedirectLocation();
+
+    //Connection(keepAlive)
+    headerLine += createKeepAlive();
     
     //last CRLF
     headerLine += CRLF;

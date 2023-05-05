@@ -23,6 +23,7 @@ class ResponseHandler
     public:
         typedef std::string StartLineType, HeaderLineType, BodyType, DateType, ContentLengthType, CookieStringType, RedirectLocationType;
         typedef std::string ResponseMessageType, StatusCodeType, StatusTextType, ErrorPageLocationType;
+        typedef std::string KeepAliveType;
         typedef std::map<std::string, std::string> StatusTextMapType, ErrorPageLocationMapType;
 
     private:
@@ -43,6 +44,8 @@ class ResponseHandler
         static DateType getCookieTime();
         static bool isRedirectStatusCode();
         static RedirectLocationType createRedirectLocation();
+        static bool isKeepAlive();
+        static KeepAliveType createKeepAlive();
 
         static BodyType createBody();        
         static ResponseMessageType pasteAll(StartLineType &startLine, HeaderLineType &headerLine, BodyType &body);

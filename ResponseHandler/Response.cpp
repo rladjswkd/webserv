@@ -1,5 +1,10 @@
 #include "Response.hpp"
 
+Response::Response()
+: contentType("TEXT_HTML"), keepAlive(true)
+{
+
+}
 
 std::string Response::getStatusCode()
 {
@@ -70,3 +75,14 @@ void Response::setCookie(std::string key, std::string value)
 {
     this->cookie[key] = value;
 }
+
+bool Response::getKeepAlive()
+{
+    return this->keepAlive;    
+}
+
+void Response::setKeepAlive(bool keepAlive)
+{
+    this->keepAlive = keepAlive;
+}
+
