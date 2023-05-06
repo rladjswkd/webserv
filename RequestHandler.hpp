@@ -52,13 +52,13 @@ class RequestHandler
         static bool     isAllowed(std::vector<std::string>  &limitExcept, const std::string method);
         static bool     isRequestBodyTooLarge(size_t clientMaxBodySize, size_t contentLength);
         static bool     isDirectoryPath(Path requestPath);
-        bool            isCGIPath(Path requestPath);
-        void            setAddtionalEnv(const Path requestPath, const Request &request);
-        void            executeScript(int *pipefd, const Path requestPath, const Request &request);
-        Response        responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request);
-        Response        responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
-        void            tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
-        bool            resolveRerativePath(Request &request);
+        static bool     isCGIPath(Path requestPath);
+        static void     setAddtionalEnv(const Path requestPath, const Request &request);
+        static void     xecuteScript(int *pipefd, const Path requestPath, const Request &request);
+        static Response responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request);
+        static Response responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
+        static void     tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
+        static bool     resolveRerativePath(Request &request);
     public:
         static  std::string createDirectoryListing(PathType path);
     public:
