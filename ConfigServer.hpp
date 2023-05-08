@@ -16,7 +16,8 @@ private:
 public:
 	void			addConfigLocation(Route route, ConfigLocation configLocation);
 	void			setUndeclaredLocationDirectives(const ConfigServer &server);
-	const_iterator	findLocation(Route route);
+	const_iterator	findLocation(Route route) const;
+	const_iterator	end() const;
 };
 
 #endif

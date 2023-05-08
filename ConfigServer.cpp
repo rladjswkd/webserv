@@ -11,7 +11,12 @@ void ConfigServer::setUndeclaredLocationDirectives(const ConfigServer &server)
 		(it->second).setDirectivesInter(server);
 }
 
-ConfigServer::const_iterator ConfigServer::findLocation(Route route)
+ConfigServer::const_iterator ConfigServer::findLocation(Route route) const
 {
 	return (locationMap.find(route));
+}
+
+ConfigServer::const_iterator ConfigServer::end() const
+{
+	return (locationMap.end());
 }
