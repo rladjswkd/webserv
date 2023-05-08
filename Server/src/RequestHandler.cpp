@@ -144,8 +144,8 @@ void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request
     ss << request.getContentLength();
     setenv("CONTENT_LENGTH", ss.str().c_str(), 1);
     setenv("HTTP_CONTENT_LENGTH", ss.str().c_str(), 1);
-    setenv("CONTENT_TYPE", "", 1); // TODO upload file
-    setenv("HTTP_CONTENT_TYPE", "", 1); // TODO upload file
+    setenv("CONTENT_TYPE", request.getContentType().c_str(), 1); // TODO upload file
+    setenv("HTTP_CONTENT_TYPE", request.getContentType().c_str(), 1); // TODO upload file
     setenv("QUERY_STRING", request.getQueryString().c_str(), 1);
     setenv("REQUEST_METHOD", request.getMethod().c_str(), 1);
     setenv("SCRIPT_FILENAME", requestPath.c_str(), 1);
@@ -171,6 +171,7 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
 
 Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request){
     // TODO extension check
+    (void ) location; // FIXME exit or exception?
     Response    response;
     pid_t       pid;
     int         pipefd[2];

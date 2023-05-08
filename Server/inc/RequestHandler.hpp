@@ -1,8 +1,8 @@
 #ifndef REQUEST_HANDLER_H
 # define REQUEST_HANDLER_H
 
-#include "./RequestParser/Request.hpp"
-#include "./ResponseHandler/Response.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 #include "Block.hpp"
 #include "Config.hpp"
 #include "ConfigLocation.hpp"
@@ -13,9 +13,9 @@
 #include <sstream>
 #include <cstdlib>
 
-# define ERROR_PAGE_DIR_PATH    "./ResponseHandler/ErrorPage/"
-# define CGI_PATH               "./cgi-bin/"
-# define ROOT_PATH              "."
+# define ERROR_PAGE_DIR_PATH    "../../ErrorPage/"
+# define CGI_PATH               "../../cgi-bin/"
+# define ROOT_PATH              "../../"
 # define READ                   0
 # define WRITE                  1
 
@@ -42,7 +42,6 @@ class RequestHandler
         static std::string createDirectoryListing(PathType path);
         static std::string getDirectoryList(PathType path);
         static Response processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request);     
-        static std::string getDirectoryList(PathType path);
         static std::string getFile(PathType path);
         static std::string readFileToString(const Path &filePath);
         static Response responseError(std::string statusCode, ErrorPageMap errorPage);
@@ -59,8 +58,6 @@ class RequestHandler
         static Response responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
         static void     tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
         static bool     resolveRerativePath(Request &request);
-    public:
-        static  std::string createDirectoryListing(PathType path);
     public:
         static  Response    responseError(std::string statusCode);
         static  Response    processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request);

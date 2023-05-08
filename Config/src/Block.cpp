@@ -1,9 +1,9 @@
 #include "Block.hpp"
 
 BaseBlock::BaseBlock()
-: clientMaxBodySize(CLIENT_MAX_BODY_SIZE_DEFAULT)
+: mask()
+, clientMaxBodySize(CLIENT_MAX_BODY_SIZE_DEFAULT)
 , autoIndex(AUTOINDEX_DEFAULT)
-, mask()
 {
 	index.push_back(INDEX_DEFAULT);
 }
