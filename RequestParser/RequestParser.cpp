@@ -58,13 +58,13 @@ bool RequestParser::isHttpVersion(std::string str)
     return (HTTPVERSION.find(str) != std::string::npos);
 }
 
-Request::method_enum  RequestParser::settingMethod(std::string str)
+Request::MethodType  RequestParser::settingMethod(std::string str)
 {
   if (str == "GET")
-    return Request::GET;
+    return "GET";
   else if (str == "POST")
-    return Request::POST;
-  return Request::DELETE;
+    return "POST";
+  return "DELETE";
 }
 
 void RequestParser::queryStringSyntaxCheck(std::string uri)
@@ -222,6 +222,7 @@ void RequestParser::cookieValidity(FieldValue fieldValue)
       throwError("400", "cookie syntax error!");
     request.setCookie(trimAll(*(cookieKeyValue.begin())), trimAll(*(--cookieKeyValue.end())));
   }
+  request.setCookieString(trimAll(fieldValue));
 }
 
 void RequestParser::extractMultipartFormDataId(FieldValue fieldValue)

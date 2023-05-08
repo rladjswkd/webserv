@@ -11,22 +11,15 @@ class Request
 	public:
 		typedef std::map<std::string, std::string>	HeaderFieldsMap, QueryStringMapType;
 		typedef std::map<std::string, std::string>  CookieType;
-		typedef std::string							HostType, MultipartFormDataIdType, PortType;
+		typedef std::string							HostType, MultipartFormDataIdType, PortType, CookieStringType;
 		typedef std::list<std::string>				FieldValueListType, ChunkedListType, MultipartFormDataIdListType, UriListType;
 		typedef size_t								ContentLengthType;
-
-		enum	method_enum
-		{
-			GET = 0,
-			POST = 1,
-			DELETE = 2
-		};
-
+		typedef std::string						MethodType;
 		Request();
 
 	private:
 		//start line
-		method_enum	method;
+		MethodType	method;
 		std::string	uriPath;
 		std::string	queryString;
 		QueryStringMapType queryStringMap;
@@ -41,6 +34,7 @@ class Request
 		bool				keepAlive;					// keep-alive의 on-off 여부(default=true)
 		ContentLengthType	contentLength;
 		CookieType			cookie;
+		CookieStringType		cookieString;
 		MultipartFormDataIdType multipartFormDataId; //upload시 사용됨. 이 id를 기준으로 계속 데이터가 들어옴.
 
 		//body
@@ -50,7 +44,7 @@ class Request
 		std::string errorCode;
 
 	public:
-		method_enum getMethod() const;
+		MethodType  getMethod() const;
 		std::string getUriPath() const ;
 		std::string getQueryString() const;
 		std::string getHttpVersion() const;
@@ -59,6 +53,7 @@ class Request
 		FieldValueListType getTransferEncoding() const;
 		size_t getContentLength() const;
 		CookieType getCookie() const;
+		CookieStringType getCookieString() const;
 		std::string getBody() const;
 		std::string getErrorCode() const;
 		PortType	getPort() const;
@@ -67,7 +62,7 @@ class Request
 		MultipartFormDataIdType getMultipartFormDataId() const;
 		QueryStringMapType getQueryStringMap() const;
 
-		void setMethod(method_enum method);
+		void setMethod(MethodType method);
 		void setUriPath(std::string uriPath);
 		void setQueryString(std::string queryString);
 		void setHttpVersion(std::string httpVersion);
@@ -76,6 +71,7 @@ class Request
 		void setTransferEncoding(FieldValueListType transferEncoding);
 		void setContentLength(ContentLengthType contentLength);
 		void setCookie(std::string key, std::string value);
+		void setCookieString(std::string cookieString);
 		void setBody(std::string body);
 		void setErrorCode(std::string errorCode);
 		void setPort(PortType port);

@@ -6,11 +6,11 @@ Request::Request()
 
 }
 
-Request::method_enum Request::getMethod() const {
+Request::MethodType Request::getMethod() const {
     return method;
 }
 
-void Request::setMethod(method_enum method) {
+void Request::setMethod(MethodType method) {
     this->method = method;
 }
 
@@ -145,4 +145,14 @@ void Request::setQueryStringMap(std::string key, std::string value)
 Request::QueryStringMapType Request::getQueryStringMap() const
 {
     return queryStringMap;
+}
+
+void Request::setCookieString(std::string cookieString)
+{
+    this->cookieString = cookieString;
+}
+
+Request::CookieStringType Request::getCookieString() const
+{
+    return cookieString;
 }
