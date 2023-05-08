@@ -1,6 +1,6 @@
 #include "RequestHandler.hpp"
 
-std::string RequestHandler::readFileToString(std::string &filePath){
+std::string RequestHandler::readFileToString(const Path &filePath){
     std::ifstream   file(filePath.c_str());
     std::string     str;
 
@@ -49,21 +49,21 @@ Response    RequestHandler::responseRedirect(std::vector<std::string> redirect){
 
 Response    RequestHandler::responseIndex(const ConfigLocation location, const Path requestPath, const Request &request){
     Path temp;
-    std::vector<std::string>::iterator index;
-    std::vector<std::string> &indexList = location.getIndex();
+    std::vector<std::string>::const_iterator index;
+    const std::vector<std::string> &indexList = location.getIndex();
 
     for(index = indexList.begin(); index != indexList.end(); ++index){
         temp = requestPath + *index;
         if (access(temp.c_str(), F_OK) == 0)
             return responseFile(location, temp, request);
     }
-    if (location.getAutoIndoex())
+    if (location.isAutoIndexOn())
         return responseAutoIndex(location, requestPath, request);
     return responseError("404", location.getErrorPage());
 }
 
-bool    RequestHandler::isAllowed(std::vector<std::string>  &limitExcept, const std::string method){
-    std::vector<std::string>::iterator  it;
+bool    RequestHandler::isAllowed(const ArgumentList  &limitExcept, const std::string method){
+    ArgumentList::const_iterator  it;
 
     for (it = limitExcept.begin(); it != limitExcept.end(); ++it){
         if (method == *it)
@@ -91,7 +91,7 @@ bool    RequestHandler::isCGIPath(Path requestPath){
     return false;
 }
 
-void    RequestHandler::setAddtionalEnv(const Path requestPath, const Request &request){
+void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request){
     std::stringstream   ss;
 
     ss << request.getContentLength();
@@ -108,7 +108,7 @@ void    RequestHandler::setAddtionalEnv(const Path requestPath, const Request &r
     setenv("SERVER_PORT", request.getPort().c_str(), 1);
     setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
     setenv("SERVER_SOFTWARE", "Webserver", 1);
-    setenv("HTTP_COOKIE", request.getCookie().c_str(), 1);
+    setenv("HTTP_COOKIE", request.getCookie().c_str(), 1); // FIXME getCookie() return vector<stirng>
 }
 
 void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const Request &request){
@@ -163,14 +163,14 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
 Response    RequestHandler::processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request){
     Path requestPath;
 
-    if (isRequestBodyTooLarge(location.getclientMaxBodySize(), request.getContentLength()))
+    if (isRequestBodyTooLarge(location.getClientMaxBodySize(), request.getContentLength()))
         return responseError("413", location.getErrorPage());
     if (!isAllowed(location.getLimitExcept(), request.getMethod()))
         return responseError("403", location.getErrorPage());
     if (location.hasAlias())
         requestPath = location.getAlias() + request.getUriPath().erase(0, route.length());
     else
-        requestPath = ROOT_PATH + requeset.getUriPath();
+        requestPath = ROOT_PATH + request.getUriPath();
     if (isDirectoryPath(requestPath))
         return responseIndex(location, requestPath, request);
     if (isCGIPath(requestPath))
@@ -224,7 +224,7 @@ bool    RequestHandler::resolveRerativePath(Request &request){
 }
 
 Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request){
-    ConfigServer    server;
+    const ConfigServer    &server = config.getServer(socketaddr, request.getHost());
     ConfigLocation  location;
     Route           route;
     std::string     errorCode;
@@ -232,7 +232,6 @@ Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr
     errorCode = request.getErrorCode();
     if (!errorCode.empty())
         return responseError(errorCode);
-    server = config.getServer(socketaddr, request.getHost());
     if (server.hasRedirect())
         return responseRedirect(server.getRedirect());
     if (!resolveRerativePath(request))
