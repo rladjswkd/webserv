@@ -55,5 +55,7 @@ public:
 	const Request	&getRequestObject();
 	void			setResponseObject(Response responseObj);
 	const Response	&getResponseObject();
+
+	bool			isKeepAlive();
 };
 #endif

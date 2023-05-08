@@ -32,7 +32,7 @@ void Server::generateServerSocket(SocketAddr socketAddr)
 	servers.insert(std::make_pair(fd, socketAddr));
 }
 
-Server::FileDescriptor Server::createSocket()
+const Server::FileDescriptor Server::createSocket()
 {
 	FileDescriptor	fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
@@ -74,7 +74,7 @@ void Server::initServerSockets()
 		generateServerSocket(cIt->first);
 }
 
-Server::FileDescriptor Server::createEpollObject()
+const Server::FileDescriptor Server::createEpollObject()
 {
 	FileDescriptor	fd = epoll_create(servers.size());
 
@@ -83,7 +83,7 @@ Server::FileDescriptor Server::createEpollObject()
 	return (fd);
 }
 
-void Server::controlIOEvent(FileDescriptor &epoll, int option, const FileDescriptor &target, uint32_t eventType)
+void Server::controlIOEvent(const FileDescriptor &epoll, const int &option, const FileDescriptor &target, const uint32_t &eventType)
 {
 	struct epoll_event	event = {.events = eventType, .data.fd = target};
 
@@ -91,7 +91,7 @@ void Server::controlIOEvent(FileDescriptor &epoll, int option, const FileDescrip
 		throw (std::runtime_error(std::strerror(errno))); // here fd < 0 means system limits has been reached or there is insufficient memory. so server can't run.
 }
 
-void Server::loopIOEvents(FileDescriptor &epoll)
+void Server::loopIOEvents(const FileDescriptor &epoll)
 {
 	struct epoll_event	events[MAX_EVENT_COUNT];
 	int					eventCount;
@@ -101,7 +101,7 @@ void Server::loopIOEvents(FileDescriptor &epoll)
 		handleIOEvent(epoll, events[eventId]);
 }
 
-int Server::waitIOEventOccurrence(FileDescriptor &epoll, epoll_event *events)
+int Server::waitIOEventOccurrence(const FileDescriptor &epoll, epoll_event *events)
 {
 	int	eventCount = epoll_wait(epoll, events, MAX_EVENT_COUNT, -1);
 
@@ -110,22 +110,22 @@ int Server::waitIOEventOccurrence(FileDescriptor &epoll, epoll_event *events)
 	return (eventCount);
 }
 
-void Server::handleIOEvent(FileDescriptor &epoll, const epoll_event &event)
+void Server::handleIOEvent(const FileDescriptor &epoll, const epoll_event &event)
 {
 	int			eventFd = event.data.fd;
 	uint32_t	eventType = event.events;
 
 	if (servers.find(eventFd) != servers.end())
 		return (acceptNewClient(epoll, eventFd));
-	if (cgiClients.find(eventFd) != cgiClients.end() && eventType & EPOLLIN)	// cgi pipe
+	if (cgiClients.find(eventFd) != cgiClients.end())
 		return (receiveCGI(epoll, eventFd, *(cgiClients[eventFd])));
-	if (eventType & EPOLLIN)													// not cgi. http request
+	if (eventType & EPOLLIN)
 		return (receiveRequest(epoll, eventFd, clients[eventFd]));
-	if (eventType & EPOLLOUT && clients[eventFd].isComplete())					// not cgi. http request
+	if (eventType & EPOLLOUT && clients[eventFd].isComplete())
 		return (sendData(epoll, eventFd));
 }
 
-void Server::acceptNewClient(FileDescriptor &epoll, const FileDescriptor &server)
+void Server::acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &server)
 {
 	int	client = accept(server, 0, 0);
 
@@ -140,7 +140,7 @@ void Server::acceptNewClient(FileDescriptor &epoll, const FileDescriptor &server
 	}
 }
 
-void Server::disconnectClient(FileDescriptor &epoll, FileDescriptor &client, const char *reason)
+void Server::disconnectClient(const FileDescriptor &epoll, const FileDescriptor &client, const char *reason)
 {
 	controlIOEvent(epoll, EPOLL_CTL_DEL, client, 0);
 	connection.erase(client);
@@ -149,37 +149,38 @@ void Server::disconnectClient(FileDescriptor &epoll, FileDescriptor &client, con
 	std::cerr << reason << std::endl;
 }
 
-void Server::receiveRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
 {
 	receiveData(epoll, fd, target);
 	if (target.isComplete())
 		return (processRequest(epoll, fd, target));
 }
 
-void Server::receiveCGI(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
 {
 	receiveData(epoll, fd, target);
 	if (target.isComplete())
 	{
 		controlIOEvent(epoll, EPOLL_CTL_DEL, fd, EPOLLERR);
 		cgiClients.erase(fd);
+		target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject()));
 		waitChildProcessNonblocking();
 	}
 }
 
-void Server::processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
 {
-	FileDescriptor	pipe = 0;
+	FileDescriptor	cgiPipe = 0;
 
-	target.setResponseObject(RequestHandler::processRequest(&pipe, connection[fd], config, target.getRequestObject()));
-	if (pipe == 0)
+	target.setResponseObject(RequestHandler::processRequest(&cgiPipe, connection[fd], config, target.getRequestObject()));
+	if (cgiPipe == 0)
 		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
-	controlIOEvent(epoll, EPOLL_CTL_ADD, pipe, EPOLLIN);
-	cgiClients[pipe] = &target;
+	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
+	cgiClients[cgiPipe] = &target;
 	target.setCGIState();
 }
 
-void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
+void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 {
 	Client		&target = clients[client];
 	const char	*response = target.getResponseMessage();
@@ -188,18 +189,20 @@ void Server::sendData(FileDescriptor &epoll, FileDescriptor &client)
 	if (sent < 0)
 		return (disconnectClient(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
 	if (target.updateResponsePointer(sent) == CHAR_NULL)
-		target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
+		handleConnection(epoll, target.isKeepAlive());
+		// target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
+		//receiveData에서 0을 수신해서 연결을 끊었을 때를 생각해보자. 여기서 connection option을 확인했을 때 그 값이 close여서 disconnect를 다시 호출할 때 문제가 없을까? -> 동작에 문제는 없지만 close가 -1을 반환하고 errno가 EBADF로 설정될 것이다.
 }
 
-void Server::receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &target)
+void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
 {
 	char	buffer[BUFFER_SIZE] = {0};	// C99
 	ssize_t	received = recv(fd, buffer, BUFFER_SIZE - 1, 0);
 
 	if (received < 0)
 		return (disconnectClient(epoll, fd, RECV_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	if (received == 0)
-		return (disconnectClient(epoll, fd, DISCONNECTION_MESSAGE)); //TODO: 5xx server error?
+	if (received == 0) //TODO: should it be handled that client sent keep alive connection option but close its socket connection? (set connection option as "close")
+		return (disconnectClient(epoll, fd, DISCONNECTED_MESSAGE));
 	target.appendMessage(buffer);
 }
 
@@ -209,12 +212,21 @@ void Server::waitChildProcessNonblocking()
 	{ }
 }
 
+void Server::handleConnection(const FileDescriptor &epoll, const FileDescriptor &client)
+{
+	Client	&target = clients[client];
+
+	if (target.isKeepAlive())
+		return (target.reset());
+	disconnectClient(epoll, client, DISCONNECTING_MESSAGE);	
+}
+
 Server::Server(const Config config) : config(config)
 { }
 
 void Server::run()
 {
-	FileDescriptor	epoll = createEpollObject();
+	const FileDescriptor	epoll = createEpollObject();
 
 	initServerSockets();
 	for (ServerMap::const_iterator cIt = servers.begin(); cIt != servers.end(); cIt++)
