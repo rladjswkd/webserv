@@ -36,6 +36,6 @@ public:
 	const_iterator		begin() const;
 	const_iterator		end() const;
 
-	const ConfigServer	&getServer(SocketAddr socketAddr, ConfigServerContainer::ServerName serverName);
+	const ConfigServer	&getServer(SocketAddr socketAddr, ConfigServerContainer::ServerName serverName) const;
 };
 #endif

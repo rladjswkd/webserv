@@ -26,7 +26,7 @@ Config::const_iterator Config::end() const
     return (serverMap.end());
 }
 
-const ConfigServer &Config::getServer(SocketAddr socketAddr, ConfigServerContainer::ServerName serverName)
+const ConfigServer &Config::getServer(SocketAddr socketAddr, ConfigServerContainer::ServerName serverName) const
 {
 	ConfigServerContainer			&container = serverMap[socketAddr];
 	ServerSubMap					&mapper = container.serverSubMap;

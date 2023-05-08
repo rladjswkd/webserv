@@ -13,8 +13,8 @@ public:
 	void				setAlias(Argument list);
 	void				setLimitExcept(ArgumentList list);
 	
-	const Argument		&getAlias();
-	bool				hasAlias();
-	const ArgumentList	&getLimitExcept();
+	const Argument		&getAlias() const;
+	bool				hasAlias() const;
+	const ArgumentList	&getLimitExcept() const;
 };
 #endif
