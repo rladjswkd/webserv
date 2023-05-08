@@ -159,13 +159,14 @@ void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request
 }
 
 void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const Request &request){
-
+    char *chr[1];
+    chr[0] = NULL;
     setAddtionalEnv(requestPath, request);
     dup2(*pipefd, STDIN_FILENO);
     dup2(*(pipefd + 1), STDOUT_FILENO);
     close(*pipefd);
     close(*(pipefd + 1));
-    execve(requestPath.c_str(), NULL, environ);
+    execve(requestPath.c_str(), chr, environ);
     exit(-1);
 }
 

@@ -17,7 +17,7 @@ void Server::generateServerSocket(SocketAddr socketAddr)
 {
 	static struct addrinfo	hints = createaddrHints();
 	struct addrinfo			*result = NULL;
-	FileDescriptor			fd = createSocket();
+	const FileDescriptor	fd = createSocket();
 	int						bindError;
 
 	if (getaddrinfo(extractNumericHost(socketAddr.first), socketAddr.second.c_str(), &hints, &result) != 0)
@@ -33,7 +33,7 @@ void Server::generateServerSocket(SocketAddr socketAddr)
 	servers.insert(std::make_pair(fd, socketAddr));
 }
 
-const Server::FileDescriptor Server::createSocket()
+Server::FileDescriptor Server::createSocket()
 {
 	FileDescriptor	fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
@@ -75,7 +75,7 @@ void Server::initServerSockets()
 		generateServerSocket(cIt->first);
 }
 
-const Server::FileDescriptor Server::createEpollObject()
+Server::FileDescriptor Server::createEpollObject()
 {
 	FileDescriptor	fd = epoll_create(servers.size());
 
@@ -86,7 +86,7 @@ const Server::FileDescriptor Server::createEpollObject()
 
 void Server::controlIOEvent(const FileDescriptor &epoll, const int &option, const FileDescriptor &target, const uint32_t &eventType)
 {
-	struct epoll_event	event = {.events = eventType, .data.fd = target};
+	struct epoll_event	event = {.events = eventType, .data = {.fd = target}};
 
 	if (epoll_ctl(epoll, option, target, &event) < 0)
 		throw (std::runtime_error(std::strerror(errno))); // here fd < 0 means system limits has been reached or there is insufficient memory. so server can't run.
@@ -228,9 +228,10 @@ Server::Server(const Config config) : config(config)
 
 void Server::run()
 {
-	const FileDescriptor	epoll = createEpollObject();
+	FileDescriptor	epoll;
 
 	initServerSockets();
+	epoll = createEpollObject();
 	for (ServerMap::const_iterator cIt = servers.begin(); cIt != servers.end(); cIt++)
 		controlIOEvent(epoll, EPOLL_CTL_ADD, cIt->first, EPOLLIN);
 	while (true)
