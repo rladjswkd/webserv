@@ -13,11 +13,11 @@ Response    RequestHandler::responseError(std::string statusCode){
     Response    response;
     Path        errorFilePath = ERROR_PAGE_DIR_PATH;
 
-    // TODO Connection : close
     errorFilePath += statusCode;
     response.setStatusCode(statusCode);
     response.setBody(readFileToString(errorFilePath));
     response.setContentLength(response.getBody());
+    response.setKeepAlive(false);
     return response;
 }
 
@@ -26,7 +26,6 @@ Response    RequestHandler::responseError(std::string statusCode, ErrorPageMap e
     ErrorPageIterator   it;
     Path                errorFilePath = ERROR_PAGE_DIR_PATH;
 
-    // TODO Connection : close
     errorFilePath += statusCode;
     response.setStatusCode(statusCode);
     it = errorPage.find(statusCode);
@@ -35,15 +34,27 @@ Response    RequestHandler::responseError(std::string statusCode, ErrorPageMap e
     else
         response.setBody(readFileToString(errorFilePath));
     response.setContentLength(response.getBody());
+    response.setKeepAlive(false);
     return response;
 }
 
 Response    RequestHandler::responseRedirect(std::vector<std::string> redirect){
     Response    response;
 
-    // TODO Connection : keep-alive
     response.setStatusCode(redirect[0]);
     response.setLocation(redirect[1]);
+    response.setKeepAlive(true);
+    return response;
+}
+Response    RequestHandler::responseAutoIndex(const ConfigLocation location, const Path &requestPath, const Request &request){
+    Response    response;
+
+    if (request.getMethod() != "GET")
+        return responseError("405", location.getErrorPage());
+    response.setStatusCode("200");
+    response.setBody(createDirectoryListing(requestPath));
+    response.setContentLength(response.getBody());
+    response.setKeepAlive(request.getKeepAlive());
     return response;
 }
 
@@ -115,13 +126,13 @@ bool    RequestHandler::isRequestBodyTooLarge(size_t clientMaxBodySize, size_t c
 }
 
 bool    RequestHandler::isDirectoryPath(Path requestPath){
-    if (requestPath.back() == '/')
+    if (requestPath[requestPath.length() - 1] == '/')
         return true;
     return false;
 }
 
 bool    RequestHandler::isCGIPath(Path requestPath){
-    Path    rootPath = ROOT_PATH;
+    Path    rootPath = CGI_PATH;
     if (rootPath.compare(requestPath) == 0)
         return true;
     return false;
@@ -139,7 +150,7 @@ void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request
     setenv("REQUEST_METHOD", request.getMethod().c_str(), 1);
     setenv("SCRIPT_FILENAME", requestPath.c_str(), 1);
     setenv("PATH_INFO", "", 1);
-    setenv("SCRIPT_NAME", requestPath.substr(requestPath.rfind('/')), 1);
+    setenv("SCRIPT_NAME", requestPath.substr(requestPath.rfind('/')).c_str(), 1);
     setenv("SERVER_NAME", request.getHost().c_str(), 1);
     setenv("SERVER_PORT", request.getPort().c_str(), 1);
     setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
@@ -160,7 +171,6 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
 
 Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request){
     // TODO extension check
-    // TODO response CGI
     Response    response;
     pid_t       pid;
     int         pipefd[2];
@@ -193,6 +203,7 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
     response.setStatusCode("200");
     response.setBody(readFileToString(requestPath));
     response.setContentLength(response.getBody());
+    response.setKeepAlive(request.getKeepAlive());
     return response;
 }
 
@@ -272,8 +283,8 @@ Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr
         return responseRedirect(server.getRedirect());
     if (!resolveRerativePath(request))
         return responseError("400", server.getErrorPage());
-    // if (!config.getLocation(request.getUriPath(), route, location))
-        // return responseError("501", server.getErrorPage()); // error response status 5XX?
+    if (server.findLocation(request.getUriPath()) == server.end())
+        return responseError("404", server.getErrorPage());
     if (location.hasRedirect())
         return responseRedirect(location.getRedirect());
     return processLocation(fd, location, route, request);
