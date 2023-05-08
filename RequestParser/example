@@ -1,0 +1,34 @@
+GET /index.html HTTP/1.1\r\n
+Host: github.co.kr\r\n
+Connection: keep-alive\r\n
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\r\n
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\r\n
+Referer: http://github.co.kr/\r\n
+Accept-Encoding: gzip, deflate\r\n
+Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7\r\n
+\r\n
+[Full request URI: http://github.co.kr/index.html]
+[HTTP request 1/1]
+[Response in frame: 24808]
+
+
+
+
+METHOD SP URI SP VERSION
+
+METHOD SP VERSION
+
+
+GETPOSTDELETE
+
+" "
+# define WHITESPACES_LITERAL		" \n\t\r\f\v"
+
+STARTLINE_STR
+FIELDNAME
+FIELDVALUE
+COLON
+BODY
+CRLF
+SP
+WHITESPACES_LITERAL

@@ -16,16 +16,32 @@ void Config::setUndeclaredDirectives()
 		(it->second).setUndeclaredServerDirectives(*this);
 }
 
+Config::const_iterator Config::begin() const
+{
+    return (serverMap.begin());
+}
+
+Config::const_iterator Config::end() const
+{
+    return (serverMap.end());
+}
+
+const ConfigServer &Config::getServer(SocketAddr socketAddr, ConfigServerContainer::ServerName serverName)
+{
+	ConfigServerContainer			&container = serverMap[socketAddr];
+	ServerSubMap					&mapper = container.serverSubMap;
+	ServerSubMap::const_iterator	cIt = mapper.find(serverName);
+
+	if (cIt == mapper.end())
+		return (*(container.defaultServer));
+	return (cIt->second);		
+}
+
 void Config::ConfigServerContainer::addServerSubPair(ServerSubPair pair)
 {
 	serverSubMap.insert(pair);
 	if (serverSubMap.size() == 1)
 		defaultServer = &(serverSubMap[pair.first]);
-}
-
-const ConfigServer &Config::ConfigServerContainer::getDefaultServer()
-{
-	return (*defaultServer);
 }
 
 void Config::ConfigServerContainer::setUndeclaredServerDirectives(const Config &config)
@@ -38,5 +54,4 @@ void Config::ConfigServerContainer::setUndeclaredServerDirectives(const Config &
 		server.setDirectivesBase(config);
 		server.setUndeclaredLocationDirectives(server);
 	}
-		
 }
