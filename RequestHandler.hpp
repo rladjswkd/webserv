@@ -7,6 +7,7 @@
 #include "Config.hpp"
 #include "ConfigLocation.hpp"
 #include <unistd.h>
+#include <dirent.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -37,6 +38,8 @@ class RequestHandler
 
     private:
         RequestHandler();
+        static std::string createDirectoryListing(PathType path);
+        static std::string getDirectoryList(PathType path);
         static Response processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request);     
         static std::string getDirectoryList(PathType path);
         static std::string getFile(PathType path);
