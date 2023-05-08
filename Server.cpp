@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "ResponseHandler.hpp"
+#include "RequestHandler.hpp"
 
 void Server::generateServerSocket(SocketAddr socketAddr)
 {
@@ -173,7 +174,7 @@ void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &f
 {
 	FileDescriptor	cgiPipe = 0;
 
-	target.setResponseObject(RequestHandler::processRequest(&cgiPipe, connection[fd], config, target.getRequestObject()));
+	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[fd]), config, const_cast<Request &>(target.getRequestObject())));
 	if (cgiPipe == 0)
 		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
 	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);

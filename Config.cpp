@@ -28,8 +28,8 @@ Config::const_iterator Config::end() const
 
 const ConfigServer &Config::getServer(SocketAddr socketAddr, ConfigServerContainer::ServerName serverName) const
 {
-	ConfigServerContainer			&container = serverMap[socketAddr];
-	ServerSubMap					&mapper = container.serverSubMap;
+	const ConfigServerContainer		&container = serverMap.at(socketAddr);
+	const ServerSubMap				&mapper = container.serverSubMap;
 	ServerSubMap::const_iterator	cIt = mapper.find(serverName);
 
 	if (cIt == mapper.end())
