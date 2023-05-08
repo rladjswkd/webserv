@@ -182,7 +182,7 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
     if (pid < 0)
         std::cerr << "FORK ERROR" << std::endl;
     else if (pid == 0)
-        executeScript(pipefd);
+        executeScript(pipefd, requestPath, request);
     if (write(pipefd[WRITE], requestBody.c_str(), requestBody.length()) == -1)
         std::cerr << "PIPE WRITE ERROR" << std::endl;
     close(pipefd[WRITE]);
