@@ -10,17 +10,17 @@ void ConfigLocation::setLimitExcept(ArgumentList list)
 	limitExcept = list;
 }
 
-const ConfigLocation::Argument &ConfigLocation::getAlias()
+const ConfigLocation::Argument &ConfigLocation::getAlias() const
 {
 	return (alias);
 }
 
-bool ConfigLocation::hasAlias()
+bool ConfigLocation::hasAlias() const
 {
 	return (!alias.empty());
 }
 
-const ConfigLocation::ArgumentList &ConfigLocation::getLimitExcept()
+const ConfigLocation::ArgumentList &ConfigLocation::getLimitExcept() const
 {
 	return (limitExcept);
 }

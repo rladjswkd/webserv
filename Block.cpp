@@ -44,22 +44,22 @@ void BaseBlock::setDirectivesBase(const BaseBlock &other)
 		this->index = other.index;
 }
 
-size_t BaseBlock::getClientMaxBodySize()
+size_t BaseBlock::getClientMaxBodySize() const
 {
 	return (clientMaxBodySize);
 }
 
-bool BaseBlock::isAutoIndexOn()
+bool BaseBlock::isAutoIndexOn() const
 {
 	return (autoIndex);
 }
 
-const BaseBlock::ArgumentList &BaseBlock::getIndex()
+const BaseBlock::ArgumentList &BaseBlock::getIndex() const
 {
 	return (index);
 }
 
-const BaseBlock::ErrorPageMap &BaseBlock::getErrorPage()
+const BaseBlock::ErrorPageMap &BaseBlock::getErrorPage() const
 {
 	return (errorPage);
 }
@@ -77,12 +77,12 @@ void InterBlock::setDirectivesInter(const InterBlock &other)
 		this->redirect = other.redirect;
 }
 
-bool InterBlock::hasRedirect()
+bool InterBlock::hasRedirect() const
 {
 	return (redirect.size());
 }
 
-const InterBlock::ArgumentList &InterBlock::getRedirect()
+const InterBlock::ArgumentList &InterBlock::getRedirect() const
 {
 	return (redirect);
 }

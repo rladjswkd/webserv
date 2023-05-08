@@ -37,10 +37,10 @@ public:
 	void				setIndex(ArgumentList list);					// default : index.html
 	void				setDirectivesBase(const BaseBlock &other);
 	
-	size_t				getClientMaxBodySize();
-	bool				isAutoIndexOn();
-	const ArgumentList	&getIndex();
-	const ErrorPageMap	&getErrorPage();
+	size_t				getClientMaxBodySize() const;
+	bool				isAutoIndexOn() const;
+	const ArgumentList	&getIndex() const;
+	const ErrorPageMap	&getErrorPage() const;
 };
 
 class InterBlock : public BaseBlock
@@ -52,7 +52,7 @@ public:
 	void				setRedirect(ArgumentList list);		// no default value
 	void				setDirectivesInter(const InterBlock &other);
 
-	bool				hasRedirect();
-	const ArgumentList	&getRedirect();
+	bool				hasRedirect() const;
+	const ArgumentList	&getRedirect() const;
 };
 #endif
