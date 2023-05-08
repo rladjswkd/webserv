@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <stdlib.h>
+#include <cstdlib>
 
 # define ERROR_PAGE_DIR_PATH    "./ResponseHandler/ErrorPage/"
 # define ROOT_PATH              ""

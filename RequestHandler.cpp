@@ -108,7 +108,7 @@ void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request
     setenv("SERVER_PORT", request.getPort().c_str(), 1);
     setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
     setenv("SERVER_SOFTWARE", "Webserver", 1);
-    setenv("HTTP_COOKIE", request.getCookie().c_str(), 1); // FIXME getCookie() return vector<stirng>
+    setenv("HTTP_COOKIE", request.getCookieString().c_str(), 1);
 }
 
 void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const Request &request){
