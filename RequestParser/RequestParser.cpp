@@ -238,6 +238,7 @@ void RequestParser::contentTypeValidity(FieldValue fieldValue, HeaderType fieldV
     extractMultipartFormDataId(fieldValue);
     request.setChunked(false);
   }
+  request.setContentType(trimAll(fieldValue));
 }
 
 void RequestParser::connectionValidity(FieldValue fieldValue)

@@ -14,7 +14,7 @@ class Request
 		typedef std::string							HostType, MultipartFormDataIdType, PortType, CookieStringType;
 		typedef std::list<std::string>				FieldValueListType, ChunkedListType, MultipartFormDataIdListType, UriListType;
 		typedef size_t								ContentLengthType;
-		typedef std::string						MethodType;
+		typedef std::string						MethodType, ContentType;
 		Request();
 
 	private:
@@ -33,6 +33,7 @@ class Request
 		bool				chunked;					// chunked가 포함되어 있는지 여부(default=false)
 		bool				keepAlive;					// keep-alive의 on-off 여부(default=true)
 		ContentLengthType	contentLength;
+		ContentType contentType;
 		CookieType			cookie;
 		CookieStringType		cookieString;
 		MultipartFormDataIdType multipartFormDataId; //upload시 사용됨. 이 id를 기준으로 계속 데이터가 들어옴.
@@ -52,6 +53,7 @@ class Request
 		HostType getHost() const;
 		FieldValueListType getTransferEncoding() const;
 		size_t getContentLength() const;
+		ContentType getContentType() const;
 		CookieType getCookie() const;
 		CookieStringType getCookieString() const;
 		std::string getBody() const;
@@ -70,6 +72,7 @@ class Request
 		void setHost(HostType host);
 		void setTransferEncoding(FieldValueListType transferEncoding);
 		void setContentLength(ContentLengthType contentLength);
+		void setContentType(ContentType contentType);
 		void setCookie(std::string key, std::string value);
 		void setCookieString(std::string cookieString);
 		void setBody(std::string body);
