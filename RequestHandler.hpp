@@ -14,7 +14,8 @@
 #include <cstdlib>
 
 # define ERROR_PAGE_DIR_PATH    "./ResponseHandler/ErrorPage/"
-# define ROOT_PATH              ""
+# define CGI_PATH               "./cgi-bin/"
+# define ROOT_PATH              "."
 # define READ                   0
 # define WRITE                  1
 
@@ -50,6 +51,7 @@ class RequestHandler
         static bool     isAllowed(const ArgumentList  &limitExcept, const std::string method);
         static bool     isRequestBodyTooLarge(size_t clientMaxBodySize, size_t contentLength);
         static bool     isDirectoryPath(Path requestPath);
+        static Response responseAutoIndex(const ConfigLocation location, const Path &requestPath, const Request &request);
         static bool     isCGIPath(Path requestPath);
         static void     setAddtionalEnv(Path requestPath, const Request &request);
         static void     executeScript(int *pipefd, const Path requestPath, const Request &request);
