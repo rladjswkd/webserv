@@ -146,3 +146,13 @@ Request::QueryStringMapType Request::getQueryStringMap() const
 {
     return queryStringMap;
 }
+
+void Request::setCookieString(std::string cookieString)
+{
+    this->cookieString = cookieString;
+}
+
+Request::CookieStringType Request::getCookieString() const
+{
+    return cookieString;
+}

@@ -222,6 +222,7 @@ void RequestParser::cookieValidity(FieldValue fieldValue)
       throwError("400", "cookie syntax error!");
     request.setCookie(trimAll(*(cookieKeyValue.begin())), trimAll(*(--cookieKeyValue.end())));
   }
+  request.setCookieString(trimAll(fieldValue));
 }
 
 void RequestParser::extractMultipartFormDataId(FieldValue fieldValue)

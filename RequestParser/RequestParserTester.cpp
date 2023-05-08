@@ -37,6 +37,7 @@ void printRequest(Request request)
 	printf("contentlength : \"%lu\"\n", request.getContentLength());
 	printf("Cookie1 : %s = \"%s\"\n", (*request.getCookie().begin()).first.c_str(), (*request.getCookie().begin()).second.c_str());
 	printf("Cookie2 : %s = \"%s\"\n", ((*(++request.getCookie().begin()))).first.c_str(), (*(++request.getCookie().begin())).second.c_str());
+	printf("CookieString : \"%s\"\n", request.getCookieString().c_str());
 	printf("multitype-form-data : \"%s\"\n", request.getMultipartFormDataId().c_str());
 	printf("body : \"%s\"\n", request.getBody().c_str());
 	printf("\nother headers============================\n");
