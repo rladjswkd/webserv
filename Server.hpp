@@ -18,7 +18,8 @@
 # define CHAR_NULL						'\0'
 # define RECV_EXCEPTION_MESSAGE			"recv() ERROR!"
 # define SEND_EXCEPTION_MESSAGE			"send() ERROR!"
-# define DISCONNECTION_MESSAGE			"CLIENT DISCONNECTED!"
+# define DISCONNECTED_MESSAGE			"CLIENT DISCONNECTED!"
+# define DISCONNECTING_MESSAGE			"DISCONNECTED CONNECTION!"
 # define ACCEPT_EXCEPTION_MESSAGE		"accpet() ERROR!"
 # define EPOLL_WAIT_EXCEPTION_MESSAGE	"epoll_wait() ERROR!"
 
@@ -42,25 +43,26 @@ private:
 
 private:
 	Server();
-	void			generateServerSocket(SocketAddr socketAddr);
-	FileDescriptor	createSocket();
-	addrinfo		createaddrHints();
-	void			throwException(addrinfo *info);
-	const char		*extractNumericHost(const Host &host);
-	void			initServerSockets();
-	FileDescriptor	createEpollObject();
-	void			controlIOEvent(FileDescriptor &epoll, int option, const FileDescriptor &target, uint32_t eventType);
-	void			loopIOEvents(FileDescriptor &epoll);
-	int				waitIOEventOccurrence(FileDescriptor &epoll, epoll_event *events);
-	void			handleIOEvent(FileDescriptor &epoll, const epoll_event &event);
-	void			acceptNewClient(FileDescriptor &epoll, const FileDescriptor &server);
-	void			disconnectClient(FileDescriptor &epoll, FileDescriptor &client, const char *reason);
-	void			receiveRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
-	void			receiveCGI(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
-	void			processRequest(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
-	void			sendData(FileDescriptor &epoll, FileDescriptor &client);
-	void			receiveData(FileDescriptor &epoll, FileDescriptor &fd, Client &target);
-	void			waitChildProcessNonblocking();
+	void					generateServerSocket(SocketAddr socketAddr);
+	const FileDescriptor	createSocket();
+	addrinfo				createaddrHints();
+	void					throwException(addrinfo *info);
+	const char				*extractNumericHost(const Host &host);
+	void					initServerSockets();
+	const FileDescriptor	createEpollObject();
+	void					controlIOEvent(const FileDescriptor &epoll, const int &option, const FileDescriptor &target, const uint32_t &eventType);
+	void					loopIOEvents(const FileDescriptor &epoll);
+	int						waitIOEventOccurrence(const FileDescriptor &epoll, epoll_event *events);
+	void					handleIOEvent(const FileDescriptor &epoll, const epoll_event &event);
+	void					acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &server);
+	void					disconnectClient(const FileDescriptor &epoll, const FileDescriptor &client, const char *reason);
+	void					receiveRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
+	void					receiveCGI(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
+	void					processRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
+	void					sendData(const FileDescriptor &epoll, const FileDescriptor &client);
+	void					receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
+	void					waitChildProcessNonblocking();
+	void					handleConnection(const FileDescriptor &epoll, const FileDescriptor &client);
 
 public:
 	Server(const Config config);
