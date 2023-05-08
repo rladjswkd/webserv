@@ -156,3 +156,13 @@ Request::CookieStringType Request::getCookieString() const
 {
     return cookieString;
 }
+
+void Request::setContentType(ContentType contentType)
+{
+    this->contentType = contentType;
+}
+
+Request::ContentType Request::getContentType() const
+{
+    return contentType;
+}
