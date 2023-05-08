@@ -5,7 +5,7 @@ CXXFLAGS 	= -Wall -Wextra -Werror -std=c++98
 INCLUDES 	= Client/inc Config/inc ConfigParser/inc RequestParser/inc Server/inc
 CXXFLAGS 	+= $(addprefix -I, $(INCLUDES))
 
-SRCS 		= $(wildcard Client/src/*.cpp) $(wildcard Config/src/*.cpp) $(wildcard ConfigParser/src/*.cpp) $(wildcard RequestParser/src/*.cpp) $(wildcard Server/src/*.cpp) main.cpp
+SRCS 		= $(wildcard */src/*.cpp) main.cpp
 OBJS 		= $(SRCS:.cpp=.o)
 
 all: $(NAME)
