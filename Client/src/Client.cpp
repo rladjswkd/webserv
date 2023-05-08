@@ -4,13 +4,15 @@
 #include <stdexcept>
 #include <sstream>
 
-Client::Client() : state(STATE_REQUEST_FIELD_LINE), response("")
+Client::Client() : state(STATE_REQUEST_FIELD_LINE), response(0)
 { }
 
 void Client::appendEssentialPart(const Buffer &newRead)
 {
 	size_t  startPos = request.size() - 3;  // "3" means \r\n\r was in previous buffer and last \n is in current buffer.
 
+	if (request.size() < startPos)
+		startPos = 0;
 	request.append(newRead);
 	if (request.find(CRLFCRLF, startPos) != std::string::npos)
 		checkMessageBodyFormat();
