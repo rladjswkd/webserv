@@ -38,7 +38,7 @@ class RequestHandler
 
     private:
         RequestHandler();
-        static PathType createPath(std::string route, std::string alias);
+        static std::string createDirectoryListing(PathType path);
         static std::string getDirectoryList(PathType path);
         static Response processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request);     
         static std::string getDirectoryList(PathType path);
