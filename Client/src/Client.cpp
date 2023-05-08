@@ -144,7 +144,7 @@ void Client::setResponseMessage(const Buffer &response)
 	this->response = response.c_str();
 }
 
-const char	Client::updateResponsePointer(const ssize_t &sent)
+char	Client::updateResponsePointer(const ssize_t &sent)
 {
 	response += sent;
 	return (*response);

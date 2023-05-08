@@ -7,7 +7,7 @@
 # include "Config.hpp"
 # include "ConfigServer.hpp"
 # include "ConfigLocation.hpp"
-# include "ValidArguements.hpp"
+# include "ValidArguments.hpp"
 
 # define FILE_FORMAT_EXCEPT_MSG	"INVALID FILE FORMAT!"
 # define DOT					'.'

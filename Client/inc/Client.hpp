@@ -45,7 +45,7 @@ public:
 	Client();
 	const char		*getResponseMessage();
 	void			setResponseMessage(const Buffer &response);
-	const char		updateResponsePointer(const ssize_t &sent);
+	char			updateResponsePointer(const ssize_t &sent);
 	void			reset();
 	void			appendCGI(const Buffer &newRead);
 	void			appendMessage(const Buffer &newRead);
