@@ -57,9 +57,9 @@ private:
 	void			handleIOEvent(const FileDescriptor &epoll, const epoll_event &event);
 	void			acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &server);
 	void			disconnectClient(const FileDescriptor &epoll, const FileDescriptor &client, const char *reason);
-	void			receiveRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
-	void			receiveCGI(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
-	void			processRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
+	void			receiveRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target);
+	void			receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target);
+	void			processRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target);
 	void			sendData(const FileDescriptor &epoll, const FileDescriptor &client);
 	void			receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
 	void			waitChildProcessNonblocking();
