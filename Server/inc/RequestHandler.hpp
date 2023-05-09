@@ -13,9 +13,9 @@
 #include <sstream>
 #include <cstdlib>
 
-# define ERROR_PAGE_DIR_PATH    "../../ErrorPage/"
-# define CGI_PATH               "../../cgi-bin/"
-# define ROOT_PATH              "../../"
+# define ERROR_PAGE_DIR_PATH    "./ErrorPage/"
+# define CGI_PATH               "./cgi-bin/"
+# define ROOT_PATH              "."
 # define READ                   0
 # define WRITE                  1
 
