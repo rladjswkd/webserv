@@ -17,7 +17,7 @@ Response    RequestHandler::responseError(std::string statusCode){
     Response    response;
     Path        errorFilePath = ERROR_PAGE_DIR_PATH;
 
-    errorFilePath += statusCode;
+    errorFilePath += statusCode + ".html";
     response.setStatusCode(statusCode);
     response.setBody(readFileToString(errorFilePath));
     response.setKeepAlive(false);
