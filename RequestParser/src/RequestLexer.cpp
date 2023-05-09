@@ -132,20 +132,20 @@ void	RequestLexer::mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerFie
 void	RequestLexer::headerLineTokenize(Tokens &tokens)
 {	
 	std::string headerLine;
-	HeaderField	headerfield;
+	HeaderField	headerField;
 	Lexeme	lexeme;
 	MandatoryHeaderMap mandatoryHeader = mandatoryHeaderInitial();
 
 	while (!isCRLF())
 	{
 		headerLine = getLine();
-		headerfield = colonSplit(headerLine, ':');
-		if (isMandatoryHeader(mandatoryHeader, ft_toLower(headerfield.first)))
-			mandatoryHeaderProcess(tokens, headerfield, mandatoryHeader);
+		headerField = colonSplit(headerLine, ':');
+		if (isMandatoryHeader(mandatoryHeader, ft_toLower(headerField.first)))
+			mandatoryHeaderProcess(tokens, headerField, mandatoryHeader);
 		else
 		{
-			tokens.push_back(std::make_pair(FIELDNAME, ft_toLower(headerfield.first)));
-			tokens.push_back(std::make_pair(FIELDVALUE, headerfield.second));
+			tokens.push_back(std::make_pair(FIELDNAME, ft_toLower(headerField.first)));
+			tokens.push_back(std::make_pair(FIELDVALUE, headerField.second));
 		}
 	}
 }

@@ -2,10 +2,14 @@
 
 std::string RequestHandler::readFileToString(const Path &filePath){
     std::ifstream   file(filePath.c_str());
+    std::string     buffer;
     std::string     str;
 
-    while (file.good())
-        std::getline(file, str);
+    while (!file.eof())
+    {
+        std::getline(file, buffer);
+        str.append(buffer + '\n');
+    }
     return (str);
 }
 
@@ -16,7 +20,6 @@ Response    RequestHandler::responseError(std::string statusCode){
     errorFilePath += statusCode;
     response.setStatusCode(statusCode);
     response.setBody(readFileToString(errorFilePath));
-    response.setContentLength(response.getBody());
     response.setKeepAlive(false);
     return response;
 }
@@ -26,14 +29,13 @@ Response    RequestHandler::responseError(std::string statusCode, ErrorPageMap e
     ErrorPageIterator   it;
     Path                errorFilePath = ERROR_PAGE_DIR_PATH;
 
-    errorFilePath += statusCode;
+    errorFilePath += statusCode + ".html";
     response.setStatusCode(statusCode);
     it = errorPage.find(statusCode);
     if (it != errorPage.end() && access(it->second.c_str(), R_OK) == 0)
         response.setBody(readFileToString(it->second));
     else
         response.setBody(readFileToString(errorFilePath));
-    response.setContentLength(response.getBody());
     response.setKeepAlive(false);
     return response;
 }
@@ -43,7 +45,7 @@ Response    RequestHandler::responseRedirect(std::vector<std::string> redirect){
 
     response.setStatusCode(redirect[0]);
     response.setLocation(redirect[1]);
-    response.setKeepAlive(true);
+    response.setKeepAlive(false);
     return response;
 }
 Response    RequestHandler::responseAutoIndex(const ConfigLocation location, const Path &requestPath, const Request &request){
@@ -53,7 +55,6 @@ Response    RequestHandler::responseAutoIndex(const ConfigLocation location, con
         return responseError("405", location.getErrorPage());
     response.setStatusCode("200");
     response.setBody(createDirectoryListing(requestPath));
-    response.setContentLength(response.getBody());
     response.setKeepAlive(request.getKeepAlive());
     return response;
 }
@@ -204,7 +205,6 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
         return responseError("403", location.getErrorPage());
     response.setStatusCode("200");
     response.setBody(readFileToString(requestPath));
-    response.setContentLength(response.getBody());
     response.setKeepAlive(request.getKeepAlive());
     return response;
 }

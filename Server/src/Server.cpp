@@ -143,6 +143,7 @@ void Server::acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &
 
 void Server::disconnectClient(const FileDescriptor &epoll, const FileDescriptor &client, const char *reason)
 {
+	clients[client].setDisconnectedState();
 	controlIOEvent(epoll, EPOLL_CTL_DEL, client, 0);
 	connection.erase(client);
 	clients.erase(client);
@@ -150,31 +151,31 @@ void Server::disconnectClient(const FileDescriptor &epoll, const FileDescriptor 
 	std::cerr << reason << std::endl;
 }
 
-void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
+void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target)
 {
-	receiveData(epoll, fd, target);
+	receiveData(epoll, client, target);
 	if (target.isComplete())
-		return (processRequest(epoll, fd, target));
+		return (processRequest(epoll, client, target));
 }
 
-void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
+void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target)
 {
-	receiveData(epoll, fd, target);
+	receiveData(epoll, pipe, target);
 	if (target.isComplete())
 	{
-		controlIOEvent(epoll, EPOLL_CTL_DEL, fd, EPOLLERR);
-		cgiClients.erase(fd);
+		controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLERR);
+		cgiClients.erase(pipe);
 		ResponseHandler::cgiMessageParsing(const_cast<Response &>(target.getResponseObject()));
 		target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject()));
 		waitChildProcessNonblocking();
 	}
 }
 
-void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
+void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target)
 {
 	FileDescriptor	cgiPipe = 0;
 
-	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[fd]), config, const_cast<Request &>(target.getRequestObject())));
+	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[client]), config, const_cast<Request &>(target.getRequestObject())));
 	if (cgiPipe == 0)
 		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
 	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
@@ -191,7 +192,7 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 	if (sent < 0)
 		return (disconnectClient(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
 	if (target.updateResponsePointer(sent) == CHAR_NULL)
-		handleConnection(epoll, target.isKeepAlive());
+		handleConnection(epoll, client);
 		// target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
 		//receiveData에서 0을 수신해서 연결을 끊었을 때를 생각해보자. 여기서 connection option을 확인했을 때 그 값이 close여서 disconnect를 다시 호출할 때 문제가 없을까? -> 동작에 문제는 없지만 close가 -1을 반환하고 errno가 EBADF로 설정될 것이다.
 }
