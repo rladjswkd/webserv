@@ -62,7 +62,7 @@ std::string ResponseHandler::sizet_to_string(size_t value)
 
 ResponseHandler::ContentLengthType ResponseHandler::getContentLength()
 {
-    return sizet_to_string(response.getBody().length());
+    return sizet_to_string(response.getBody().length());    
 }
 
 ResponseHandler::CookieStringType ResponseHandler::getCookieString()
@@ -174,7 +174,7 @@ ResponseHandler::BodyType ResponseHandler::getErrorPageBody()
     std::string fileLocation = ERROR_PAGE_LOCATION + response.getStatusCode() + ".html";
     std::ifstream file(fileLocation.c_str());
     std::stringstream buffer;
-    buffer << file.rdbuf();
+    buffer << file.rdbuf(); 
     return buffer.str();
 }
 
@@ -183,8 +183,9 @@ ResponseHandler::ResponseMessageType ResponseHandler::createErrorMessage()
     ResponseMessageType errorMessage, startLine, headerLine, body;
 
     startLine = createStartLine();
-    body = getErrorPageBody();
-    response.setBody(body); //content Length가 header쪽에서 response body를 보고 바껴서 body와 header 순서를 바꿔줌.
+    // body = getErrorPageBody();
+    // response.setBody(body); //content Length가 header쪽에서 response body를 보고 바껴서 body와 header 순서를 바꿔줌.
+    body = response.getBody();
     headerLine = createHeaderLine();
     errorMessage = pasteAll(startLine, headerLine, body);
     return errorMessage;
@@ -195,10 +196,10 @@ ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(cons
     ResponseMessageType outputResponseMessage;
     
     response = inputResponseMessage;
-    if (!isErrorStatusCode())
-        outputResponseMessage = createNormalMessage();
-    else
-        outputResponseMessage = createErrorMessage();
+    // if (!isErrorStatusCode())
+    outputResponseMessage = createNormalMessage();
+    // else
+    //     outputResponseMessage = createErrorMessage();
     return outputResponseMessage; 
 }
 
