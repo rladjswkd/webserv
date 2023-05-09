@@ -4,42 +4,42 @@
 #include <stdexcept>
 #include <sstream>
 
-Client::Client() : state(STATE_REQUEST_FIELD_LINE), response(0)
+Client::Client() : state(STATE_REQUEST_FIELD_LINE)
 { }
 
-void Client::appendEssentialPart(const Buffer &newRead)
+void Client::appendEssentialPart(const Message &newRead)
 {
-	size_t  startPos = request.size() - 3;  // "3" means \r\n\r was in previous buffer and last \n is in current buffer.
+	size_t  startPos = message.size() - 3;  // "3" means \r\n\r was in previous buffer and last \n is in current buffer.
 
-	if (request.size() < startPos)
+	if (message.size() < startPos)
 		startPos = 0;
-	request.append(newRead);
-	if (request.find(CRLFCRLF, startPos) != std::string::npos)
+	message.append(newRead);
+	if (message.find(CRLFCRLF, startPos) != std::string::npos)
 		checkMessageBodyFormat();
 }
 
-void Client::appendChunked(const Buffer &newRead)
+void Client::appendChunked(const Message &newRead)
 {
-	size_t					startPos = request.size() - 3;
+	size_t					startPos = message.size() - 3;
 	RequestLexer::Tokens	tokens;
 
-	request.append(newRead);
-	if (request.find(CRLFCRLF, startPos) != std::string::npos)
+	message.append(newRead);
+	if (message.find(CRLFCRLF, startPos) != std::string::npos)
 	{
-		tokens = RequestLexer::bodyLineTokenize(request);
+		tokens = RequestLexer::bodyLineTokenize(message);
 		RequestParser::bodyLineParsing(tokens, requestObj);
 		state = STATE_COMPLETE;
 	}
 }
 
-void Client::appendContentLength(const Buffer &newRead)
+void Client::appendContentLength(const Message &newRead)
 {
 	RequestLexer::Tokens	tokens;
 
-	request.append(newRead);
-	if (request.size() >= requestObj.getContentLength())
+	message.append(newRead);
+	if (message.size() >= requestObj.getContentLength())
 	{
-		tokens = RequestLexer::bodyLineTokenize(request);
+		tokens = RequestLexer::bodyLineTokenize(message);
 		RequestParser::bodyLineParsing(tokens, requestObj);
 		state = STATE_COMPLETE;
 	}
@@ -47,7 +47,7 @@ void Client::appendContentLength(const Buffer &newRead)
 
 void Client::checkMessageBodyFormat()
 {
-	RequestLexer::Tokens	tokens = RequestLexer::startLineHeaderLineTokenize(request);
+	RequestLexer::Tokens	tokens = RequestLexer::startLineHeaderLineTokenize(message);
 
 	requestObj = RequestParser::startLineHeaderLineParsing(tokens);
 	if (requestObj.getChunked())
@@ -66,10 +66,10 @@ std::string Client::convertToString(const size_t &contentLength)
 	return (ss.str());
 }
 
-void Client::appendCGI(const Buffer &newRead)
+void Client::appendCGI(const Message &newRead)
 {
 	static size_t	contentLength = 0;
-	static Buffer	body;
+	static Message	body;
 
 	if (newRead.size() == 0)	// this means that client has closed its socket.
 	{
@@ -83,10 +83,7 @@ void Client::appendCGI(const Buffer &newRead)
 	contentLength += newRead.size();
 }
 
-// Client::Client(SocketAddr connectedServer) : connectedServer(connectedServer)
-// { }
-
-void Client::appendMessage(const Buffer &newRead)
+void Client::appendMessage(const Message &newRead)
 {
 	switch (state)
 	{
@@ -111,10 +108,10 @@ void Client::setCGIState()
 	state = STATE_RESPONSE_CGI;
 }
 
-// void Client::setRequestObj(Request requestObj)
-// {
-// 	this->requestObj = requestObj;
-// }
+void Client::setDisconnectedState()
+{
+	state = STATE_DISCONNECTED;
+}
 
 const Request &Client::getRequestObject()
 {
@@ -141,9 +138,10 @@ const char *Client::getResponseMessage()
 	return (response);
 }
 
-void Client::setResponseMessage(const Buffer &response)
+void Client::setResponseMessage(const Message &response)
 {
-	this->response = response.c_str();
+	this->message = response;
+	this->response = message.c_str();
 }
 
 char	Client::updateResponsePointer(const ssize_t &sent)
@@ -156,6 +154,6 @@ char	Client::updateResponsePointer(const ssize_t &sent)
 void Client::reset()
 {
 	state = STATE_REQUEST_FIELD_LINE;
-	request.clear();
-	response = EMPTY_STRING;
+	message.clear();
+	response = 0;
 }
