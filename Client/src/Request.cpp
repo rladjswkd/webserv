@@ -1,9 +1,8 @@
 #include "Request.hpp"
 
 Request::Request()
-: chunked(false), keepAlive(true)
+: chunked(false), keepAlive(true), contentLength()
 {
-
 }
 
 Request::MethodType Request::getMethod() const {

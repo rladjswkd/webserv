@@ -499,9 +499,7 @@ Request RequestParser::httpParser(Tokens &tokens)
 
 Request RequestParser::startLineHeaderLineParsing(Tokens &tokens)
 {
-//   Request requestNew;
-
-//   request = requestNew;	//TODO: check
+  request = Request();
   try
   {
     previousErrorCheck(tokens);
