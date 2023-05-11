@@ -48,6 +48,15 @@ Response    RequestHandler::responseRedirect(std::vector<std::string> redirect){
     response.setKeepAlive(false);
     return response;
 }
+
+Response    RequestHandler::responseRedirect(const std::string &statuscode, const std::string &location){
+    Response    response;
+
+    response.setStatusCode(statuscode);
+    response.setLocation(location);
+    response.setKeepAlive(false);
+    return response;
+}
 Response    RequestHandler::responseAutoIndex(const ConfigLocation location, const Path &requestPath, const Request &request){
     Response    response;
 
@@ -193,6 +202,12 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
     return response;
 }
 
+bool    RequestHandler::isDirectoryFile(const Path requestPath){
+    if (opendir(requestPath.c_str()) == 0 && errno == ENOTDIR )
+        return true;
+    return false;
+}
+
 Response    RequestHandler::responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request){
     Response    response;
 
@@ -201,6 +216,8 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
         return responseError("404", location.getErrorPage());
     if (request.getMethod() != "GET")
         return responseError("405", location.getErrorPage());
+    if (isDirectoryFile(requestPath))
+        return responseRedirect("301", requestPath + "/");
     if (access(requestPath.c_str(), R_OK) != 0)
         return responseError("403", location.getErrorPage());
     response.setStatusCode("200");

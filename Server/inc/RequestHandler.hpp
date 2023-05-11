@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <cerrno>
 
 # define ERROR_PAGE_DIR_PATH    "./ErrorPage/"
 # define CGI_PATH               "./cgi-bin/"
@@ -46,6 +47,7 @@ class RequestHandler
         static std::string readFileToString(const Path &filePath);
         static Response responseError(std::string statusCode, ErrorPageMap errorPage);
         static Response responseRedirect(std::vector<std::string> redirect);
+        static Response responseRedirect(const std::string &statuscode, const std::string &location);
         static Response responseIndex(const ConfigLocation location, const Path requestPath, const Request &request);
         static bool     isAllowed(const ArgumentList  &limitExcept, const std::string method);
         static bool     isRequestBodyTooLarge(size_t clientMaxBodySize, size_t contentLength);
@@ -56,6 +58,7 @@ class RequestHandler
         static void     executeScript(int *pipefd, const Path requestPath, const Request &request);
         static Response responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request);
         static Response responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
+        static bool     isDirectoryFile(const Path requestPath);
         static void     tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
         static bool     resolveRerativePath(Request &request);
     public:
