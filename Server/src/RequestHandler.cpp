@@ -273,10 +273,9 @@ bool    RequestHandler::resolveRerativePath(Request &request){
 }
 
 Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request){
-    const ConfigServer    &server = config.getServer(socketaddr, request.getHost());
-    ConfigLocation  location;
-    Route           route;
-    std::string     errorCode;
+    const ConfigServer              &server = config.getServer(socketaddr, request.getHost());
+    ConfigServer::const_iterator    locationIt;
+    std::string                     errorCode;
 
     errorCode = request.getErrorCode();
     if (!errorCode.empty())
@@ -285,9 +284,10 @@ Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr
         return responseRedirect(server.getRedirect());
     if (!resolveRerativePath(request))
         return responseError("400", server.getErrorPage());
-    if (server.findLocation(request.getUriPath()) == server.end())
+    locationIt = server.findLocation(request.getUriPath());
+    if (locationIt == server.end())
         return responseError("404", server.getErrorPage());
-    if (location.hasRedirect())
-        return responseRedirect(location.getRedirect());
-    return processLocation(fd, location, route, request);
+    if (locationIt->second.hasRedirect())
+        return responseRedirect(locationIt->second.getRedirect());
+    return processLocation(fd, locationIt->second, locationIt->first, request);
 }

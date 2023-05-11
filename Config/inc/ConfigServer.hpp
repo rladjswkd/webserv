@@ -13,10 +13,13 @@ public:
 private:
 	LocationMap	locationMap;
 
+private:
+	void			updateResultRoute(const_iterator &result, const_iterator &current, const Route &requested) const;
+
 public:
 	void			addConfigLocation(Route route, ConfigLocation configLocation);
 	void			setUndeclaredLocationDirectives(const ConfigServer &server);
-	const_iterator	findLocation(Route route) const;
+	const_iterator	findLocation(const Route &requested) const;
 	const_iterator	end() const;
 };
 
