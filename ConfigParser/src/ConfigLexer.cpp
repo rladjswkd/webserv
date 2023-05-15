@@ -1,5 +1,6 @@
 #include "ConfigLexer.hpp"
 #include <stdexcept>
+#include <cstring>
 
 // static members initialization
 const ConfigLexer::Delimiter	ConfigLexer::WHITESPACES = WHITESPACES_LITERAL;
@@ -90,7 +91,7 @@ ConfigLexer::Tokens ConfigLexer::tokenize(const char *filePath)
 	Tokens	tokens;
 
 	configFile.open(filePath);
-	if (!configFile.good())
+	if (!configFile.good() || filePath[std::strlen(filePath) - 1] == '/')
 		throw (std::invalid_argument(FILEPATH_EXCEPT_MSG));
 	while (!configFile.eof())
 		processToken(tokens);

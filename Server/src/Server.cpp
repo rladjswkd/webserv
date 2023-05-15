@@ -77,7 +77,7 @@ void Server::initServerSockets()
 
 Server::FileDescriptor Server::createEpollObject()
 {
-	FileDescriptor	fd = epoll_create(servers.size());
+	FileDescriptor	fd = epoll_create(servers.size() + 1);
 
 	if (fd < 0)	// fd < 0 means system limits has been reached or there is insufficient memory. so server can't run.
 		throw (std::runtime_error(std::strerror(errno)));
@@ -134,15 +134,19 @@ void Server::acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &
 		std::cerr << ACCEPT_EXCEPTION_MESSAGE << std::endl;
 	else
 	{
-		fcntl(client, F_SETFL, O_NONBLOCK);
+		struct timeval	tv;
+		tv.tv_sec = 15;
+		setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval *));
 		clients.insert(std::make_pair(client, Client()));
 		connection.insert(std::make_pair(client, &(servers[server])));
 		controlIOEvent(epoll, EPOLL_CTL_ADD, client, (EPOLLIN | EPOLLOUT));
 	}
 }
 
-void Server::disconnectClient(const FileDescriptor &epoll, const FileDescriptor &client, const char *reason)
+void Server::disconnect(const FileDescriptor &epoll, const FileDescriptor &client, const char *reason)
 {
+	if (clients[client].isDisconnected())
+		return;
 	clients[client].setDisconnectedState();
 	controlIOEvent(epoll, EPOLL_CTL_DEL, client, 0);
 	connection.erase(client);
@@ -167,7 +171,7 @@ void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe,
 		cgiClients.erase(pipe);
 		ResponseHandler::cgiMessageParsing(const_cast<Response &>(target.getResponseObject()));
 		target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject()));
-		waitChildProcessNonblocking();
+		while (waitpid(0, 0, WNOHANG) == 0);
 	}
 }
 
@@ -178,6 +182,7 @@ void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &c
 	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[client]), config, const_cast<Request &>(target.getRequestObject())));
 	if (cgiPipe == 0)
 		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
+	fcntl(cgiPipe, F_SETFL, O_NONBLOCK); // Without this, cgiPipe must be blocking.
 	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
 	cgiClients[cgiPipe] = &target;
 	target.setCGIState();
@@ -187,10 +192,11 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 {
 	Client		&target = clients[client];
 	const char	*response = target.getResponseMessage();
-	ssize_t		sent = send(client, response, std::strlen(response), 0);
+	ssize_t		sent = send(client, response, std::strlen(response), MSG_DONTWAIT);
 
+	std::cerr << sent << std::endl;
 	if (sent < 0)
-		return (disconnectClient(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
+		return (disconnect(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
 	if (target.updateResponsePointer(sent) == CHAR_NULL)
 		handleConnection(epoll, client);
 		// target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
@@ -200,19 +206,11 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
 {
 	char	buffer[BUFFER_SIZE] = {0};	// C99
-	ssize_t	received = recv(fd, buffer, BUFFER_SIZE - 1, 0);
+	ssize_t	received = read(fd, buffer, BUFFER_SIZE - 1);
 
 	if (received < 0)
-		return (disconnectClient(epoll, fd, RECV_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	if (received == 0) //TODO: should it be handled that client sent keep alive connection option but close its socket connection? (set connection option as "close")
-		return (disconnectClient(epoll, fd, DISCONNECTED_MESSAGE));
+		return (disconnect(epoll, fd, RECV_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
 	target.appendMessage(buffer);
-}
-
-void Server::waitChildProcessNonblocking()
-{
-	while (waitpid(0, 0, WNOHANG) == 0)
-	{ }
 }
 
 void Server::handleConnection(const FileDescriptor &epoll, const FileDescriptor &client)
@@ -221,7 +219,7 @@ void Server::handleConnection(const FileDescriptor &epoll, const FileDescriptor 
 
 	if (target.isKeepAlive())
 		return (target.reset());
-	disconnectClient(epoll, client, DISCONNECTING_MESSAGE);	
+	disconnect(epoll, client, DISCONNECTING_MESSAGE);	
 }
 
 Server::Server(const Config config) : config(config)

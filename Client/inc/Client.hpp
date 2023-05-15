@@ -8,7 +8,7 @@
 # include "Response.hpp"
 
 # define CRLFCRLF							"\r\n\r\n"
-
+# define EMPTY_STRING						""
 # define STATE_REQUEST_FIELD_LINE			1
 # define STATE_REQUEST_CHUNKED				2
 # define STATE_REQUEST_CONTENT_LENGTH		4
@@ -37,7 +37,7 @@ private:
 	void		appendEssentialPart(const Message &newRead);
 	void		appendChunked(const Message &newRead);
 	void		appendContentLength(const Message &newRead);
-	void		checkMessageBodyFormat();
+	void		checkMessageBodyFormat(const size_t &headerLineEndPos);
 	std::string	convertToString(const size_t &contentLength);
 
 public:
@@ -51,7 +51,7 @@ public:
 	bool			isComplete();
 	void			setCGIState();
 	void			setDisconnectedState();
-	
+	bool			isDisconnected();
 	const Request	&getRequestObject();
 	void			setResponseObject(Response responseObj);
 	const Response	&getResponseObject();

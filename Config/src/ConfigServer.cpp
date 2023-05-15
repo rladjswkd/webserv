@@ -21,7 +21,6 @@ void ConfigServer::setUndeclaredLocationDirectives(const ConfigServer &server)
 
 ConfigServer::const_iterator ConfigServer::findLocation(const Route &requested) const
 {
-	//TODO: 모든 location uri를 이터레이터로 돌면서 given이 해당 location uri로 시작하는지 체크하고, 그러한 location uri들 중에 가장 길이가 긴 uri를 반환한다.
 	const_iterator	ret = locationMap.end();
 
 	for (const_iterator cIt = locationMap.begin(); cIt != locationMap.end(); cIt++)
