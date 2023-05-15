@@ -17,8 +17,10 @@
 # define ERROR_PAGE_DIR_PATH    "./ErrorPage/"
 # define CGI_PATH               "./cgi-bin/"
 # define ROOT_PATH              "."
-# define READ                   0
-# define WRITE                  1
+# define W_PIPE_READ            0
+# define W_PIPE_WRITE           1
+# define R_PIPE_READ            2
+# define R_PIPE_WRITE           3
 
 extern char **environ;
 
@@ -48,7 +50,7 @@ class RequestHandler
         static Response responseError(std::string statusCode, ErrorPageMap errorPage);
         static Response responseRedirect(std::vector<std::string> redirect);
         static Response responseRedirect(const std::string &statuscode, const std::string &location);
-        static Response responseIndex(const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response responseIndex(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
         static bool     isAllowed(const ArgumentList  &limitExcept, const std::string method);
         static bool     isRequestBodyTooLarge(size_t clientMaxBodySize, size_t contentLength);
         static bool     isDirectoryPath(Path requestPath);

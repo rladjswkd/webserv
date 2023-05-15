@@ -68,15 +68,18 @@ Response    RequestHandler::responseAutoIndex(const ConfigLocation location, con
     return response;
 }
 
-Response    RequestHandler::responseIndex(const ConfigLocation location, const Path requestPath, const Request &request){
+Response    RequestHandler::responseIndex(int &fd, const ConfigLocation location, const Path requestPath, const Request &request){
     Path temp;
     std::vector<std::string>::const_iterator index;
     const std::vector<std::string> &indexList = location.getIndex();
 
     for(index = indexList.begin(); index != indexList.end(); ++index){
         temp = requestPath + *index;
-        if (access(temp.c_str(), F_OK) == 0)
+        if (access(temp.c_str(), F_OK) == 0){
+            if (isCGIPath(temp))
+                return responseCGI(fd, location, temp, request);
             return responseFile(location, temp, request);
+        }
     }
     if (location.isAutoIndexOn())
         return responseAutoIndex(location, requestPath, request);
@@ -86,6 +89,8 @@ Response    RequestHandler::responseIndex(const ConfigLocation location, const P
 bool    RequestHandler::isAllowed(const ArgumentList  &limitExcept, const std::string method){
     ArgumentList::const_iterator  it;
 
+    if (limitExcept.empty())
+        return true;
     for (it = limitExcept.begin(); it != limitExcept.end(); ++it){
         if (method == *it)
             return true;
@@ -143,9 +148,7 @@ bool    RequestHandler::isDirectoryPath(Path requestPath){
 
 bool    RequestHandler::isCGIPath(Path requestPath){
     Path    rootPath = CGI_PATH;
-    if (rootPath.compare(requestPath) == 0)
-        return true;
-    return false;
+    return (requestPath.compare(0, rootPath.size(), rootPath) == 0);
 }
 
 void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request){
@@ -165,6 +168,7 @@ void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request
     setenv("SERVER_PORT", request.getPort().c_str(), 1);
     setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
     setenv("SERVER_SOFTWARE", "Webserver", 1);
+    setenv("REDIRECT_STATUS", "", 1);
     setenv("HTTP_COOKIE", request.getCookieString().c_str(), 1);
 }
 
@@ -172,40 +176,45 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
     char *chr[1];
     chr[0] = NULL;
     setAddtionalEnv(requestPath, request);
-    dup2(*pipefd, STDIN_FILENO);
-    dup2(*(pipefd + 1), STDOUT_FILENO);
-    close(*pipefd);
-    close(*(pipefd + 1));
+    dup2(*(pipefd + W_PIPE_READ), STDIN_FILENO); // FIXME throw except
+    dup2(*(pipefd + R_PIPE_WRITE), STDOUT_FILENO);
+    close(*(pipefd + W_PIPE_READ));
+    close(*(pipefd + W_PIPE_WRITE));
+    close(*(pipefd + R_PIPE_READ));
+    close(*(pipefd + R_PIPE_WRITE));
     execve(requestPath.c_str(), chr, environ);
     exit(-1);
 }
 
 Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request){
     // TODO extension check
-    (void ) location; // FIXME exit or exception?
+    // FIXME exit or exception?
     Response    response;
     pid_t       pid;
-    int         pipefd[2];
+    int         pipefd[4];
     std::string requestBody = request.getBody();
 
-    if (pipe(pipefd) < 0)
+    if (access(requestPath.c_str(), F_OK) != 0)
+        return responseError("404", location.getErrorPage());
+    if (pipe(pipefd) < 0 || pipe(pipefd + 2) < 0)
         std::cerr << "PIPE ERROR" << std::endl; // FIXME exit or exception? or 5XX responseError => pipe ERROR about FD.
     pid = fork();
     if (pid < 0)
-        std::cerr << "FORK ERROR" << std::endl;
+        std::cerr << "FORK ERROR" << std::endl; // FIXME except
     else if (pid == 0)
         executeScript(pipefd, requestPath, request);
-    if (write(pipefd[WRITE], requestBody.c_str(), requestBody.length()) == -1)
-        std::cerr << "PIPE WRITE ERROR" << std::endl;
-    close(pipefd[WRITE]);
-    fd = pipefd[READ];
+    if (write(pipefd[W_PIPE_WRITE], requestBody.c_str(), requestBody.length()) == -1)
+        std::cerr << "PIPE WRITE ERROR" << std::endl; // 
+    close(pipefd[W_PIPE_WRITE]);
+    close(pipefd[W_PIPE_READ]);
+    close(pipefd[R_PIPE_WRITE]);
+    fd = pipefd[R_PIPE_READ];
+    response.setStatusCode("200");
     return response;
 }
 
 bool    RequestHandler::isDirectoryFile(const Path requestPath){
-    if (opendir(requestPath.c_str()) == 0 && errno == ENOTDIR )
-        return true;
-    return false;
+    return (opendir(requestPath.c_str()) != NULL);
 }
 
 Response    RequestHandler::responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request){
@@ -238,7 +247,7 @@ Response    RequestHandler::processLocation(int &fd, const ConfigLocation &locat
     else
         requestPath = ROOT_PATH + request.getUriPath();
     if (isDirectoryPath(requestPath))
-        return responseIndex(location, requestPath, request);
+        return responseIndex(fd, location, requestPath, request);
     if (isCGIPath(requestPath))
         return responseCGI(fd, location, requestPath, request);
     return responseFile(location, requestPath, request);
