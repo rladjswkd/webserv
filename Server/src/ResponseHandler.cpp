@@ -120,6 +120,7 @@ ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
     headerLine += CRLF;
 
     //content_type
+    headerLine += "Content-Type: ";
     headerLine += response.getContentType();
     headerLine += CRLF;
 
