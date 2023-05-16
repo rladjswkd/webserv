@@ -10,52 +10,53 @@ Client::Client() : state(STATE_REQUEST_FIELD_LINE)
 void Client::appendEssentialPart(const Message &newRead)
 {
 	size_t  startPos = message.size() - 3;  // "3" means \r\n\r was in previous buffer and last \n is in current buffer.
+	size_t	headerLineEndPos;
 
 	if (message.size() < startPos)
 		startPos = 0;
 	message.append(newRead);
-	if (message.find(CRLFCRLF, startPos) != std::string::npos)
-		checkMessageBodyFormat();
+	headerLineEndPos = message.find(CRLFCRLF, startPos);
+	if (headerLineEndPos != std::string::npos)
+		checkMessageBodyFormat(headerLineEndPos + 4);
 }
 
 void Client::appendChunked(const Message &newRead)
 {
-	size_t					startPos = message.size() - 3;
-	RequestLexer::Tokens	tokens;
-
 	message.append(newRead);
-	if (message.find(CRLFCRLF, startPos) != std::string::npos)
+	if (message.find(CRLFCRLF, message.size() - 3) != std::string::npos)
 	{
-		tokens = RequestLexer::bodyLineTokenize(message);
-		RequestParser::bodyLineParsing(tokens, requestObj);
+		RequestParser::bodyLineParsing(RequestLexer::bodyLineTokenize(message), requestObj);
 		state = STATE_COMPLETE;
 	}
 }
 
 void Client::appendContentLength(const Message &newRead)
 {
-	RequestLexer::Tokens	tokens;
-
 	message.append(newRead);
 	if (message.size() >= requestObj.getContentLength())
 	{
-		tokens = RequestLexer::bodyLineTokenize(message);
-		RequestParser::bodyLineParsing(tokens, requestObj);
+		RequestParser::bodyLineParsing(RequestLexer::bodyLineTokenize(message), requestObj);
 		state = STATE_COMPLETE;
 	}
 }
 
-void Client::checkMessageBodyFormat()
+void Client::checkMessageBodyFormat(const size_t &headerLineEndPos)
 {
 	RequestLexer::Tokens	tokens = RequestLexer::startLineHeaderLineTokenize(message);
 
-	requestObj = RequestParser::startLineHeaderLineParsing(tokens);
+	state = STATE_COMPLETE;
+	RequestParser::startLineHeaderLineParsing(tokens, requestObj);
+	message.erase(0, headerLineEndPos);
 	if (requestObj.getChunked())
+	{
 		state = STATE_REQUEST_CHUNKED;
-	else if (requestObj.getContentLength())
+		return (appendChunked(EMPTY_STRING));
+	}
+	if (requestObj.getContentLength())
+	{
 		state = STATE_REQUEST_CONTENT_LENGTH;
-	else
-		state = STATE_COMPLETE;
+		return (appendContentLength(EMPTY_STRING));
+	}
 }
 
 std::string Client::convertToString(const size_t &contentLength)
@@ -69,17 +70,16 @@ std::string Client::convertToString(const size_t &contentLength)
 void Client::appendCGI(const Message &newRead)
 {
 	static size_t	contentLength = 0;
-	static Message	body;
 
 	if (newRead.size() == 0)	// this means that client has closed its socket.
 	{
-		responseObj.setBody(body);
+		responseObj.setBody(message);
 		responseObj.setContentLength(convertToString(contentLength));
 		contentLength = 0;
 		state = STATE_COMPLETE;
 		return;
 	}
-	body.append(newRead);
+	message.append(newRead);
 	contentLength += newRead.size();
 }
 
@@ -105,12 +105,18 @@ bool Client::isComplete()
 
 void Client::setCGIState()
 {
+	message.clear();
 	state = STATE_RESPONSE_CGI;
 }
 
 void Client::setDisconnectedState()
 {
 	state = STATE_DISCONNECTED;
+}
+
+bool Client::isDisconnected()
+{
+	return (state == STATE_DISCONNECTED);
 }
 
 const Request &Client::getRequestObject()
@@ -150,10 +156,11 @@ char	Client::updateResponsePointer(const ssize_t &sent)
 	return (*response);
 }
 
-//TODO: requestObj, responseObj도 초기화해야 하나? 이 둘은 이 클래스에서 다루진 않고 외부 클래스가 반환하는 값을 저장할 뿐이므로 초기화는 필요없어 보인다.
 void Client::reset()
 {
 	state = STATE_REQUEST_FIELD_LINE;
 	message.clear();
 	response = 0;
+	requestObj = Request();
+	responseObj = Response();
 }
