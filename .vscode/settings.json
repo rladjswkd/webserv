@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "__tree": "cpp",
-        "map": "cpp",
-        "iosfwd": "cpp"
-    }
-}
