@@ -194,7 +194,6 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 	const char	*response = target.getResponseMessage();
 	ssize_t		sent = send(client, response, std::strlen(response), MSG_DONTWAIT);
 
-	std::cerr << sent << std::endl;
 	if (sent < 0)
 		return (disconnect(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
 	if (target.updateResponsePointer(sent) == CHAR_NULL)
