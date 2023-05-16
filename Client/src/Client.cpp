@@ -70,18 +70,16 @@ std::string Client::convertToString(const size_t &contentLength)
 void Client::appendCGI(const Message &newRead)
 {
 	static size_t	contentLength = 0;
-	static Message	body;
 
 	if (newRead.size() == 0)	// this means that client has closed its socket.
 	{
-		responseObj.setBody(body);
+		responseObj.setBody(message);
 		responseObj.setContentLength(convertToString(contentLength));
 		contentLength = 0;
-		body.clear();
 		state = STATE_COMPLETE;
 		return;
 	}
-	body.append(newRead);
+	message.append(newRead);
 	contentLength += newRead.size();
 }
 
@@ -107,6 +105,7 @@ bool Client::isComplete()
 
 void Client::setCGIState()
 {
+	message.clear();
 	state = STATE_RESPONSE_CGI;
 }
 
