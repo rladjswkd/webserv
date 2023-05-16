@@ -5,7 +5,6 @@
 // static members initialization
 const ConfigLexer::Delimiter	ConfigLexer::WHITESPACES = WHITESPACES_LITERAL;
 const ConfigLexer::Delimiter	ConfigLexer::BRACKET_SEMICOLON = BRACKET_SEMICOLON_LITERAL;
-ConfigLexer::ConfigFile			ConfigLexer::configFile;
 
 bool ConfigLexer::isNotDelimiter(char c)
 {
@@ -22,7 +21,7 @@ bool ConfigLexer::isBracketOrSemicolon(Delimiter delimiter)
 	return (BRACKET_SEMICOLON.find(delimiter) != std::string::npos);
 }
 
-void ConfigLexer::processToken(Tokens &tokens)
+void ConfigLexer::processToken(Tokens &tokens, ConfigFile &configFile)
 {
 	Lexeme			lexeme;
 	std::filebuf	*fileBuf = configFile.rdbuf();
@@ -88,13 +87,15 @@ ConfigLexer::TokenType ConfigLexer::evaluateDelimiterLexeme(const Delimiter &del
 
 ConfigLexer::Tokens ConfigLexer::tokenize(const char *filePath)
 {
-	Tokens	tokens;
+	Tokens		tokens;
+	ConfigFile	configFile;
 
-	configFile.open(filePath);
-	if (!configFile.good() || filePath[std::strlen(filePath) - 1] == '/')
+	if (filePath[std::strlen(filePath) - 1] != '/')
+		configFile.open(filePath);
+	if (!configFile.is_open() || !configFile.good())
 		throw (std::invalid_argument(FILEPATH_EXCEPT_MSG));
 	while (!configFile.eof())
-		processToken(tokens);
+		processToken(tokens, configFile);
 	configFile.close();
 	return (tokens);
 }
