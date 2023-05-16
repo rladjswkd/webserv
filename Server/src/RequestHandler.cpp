@@ -151,7 +151,7 @@ bool    RequestHandler::isCGIPath(Path requestPath){
     return (requestPath.compare(0, rootPath.size(), rootPath) == 0);
 }
 
-void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request){
+void    RequestHandler::setAdditionalEnv(Path requestPath, const Request &request){
     std::stringstream   ss;
 
     ss << request.getContentLength();
@@ -175,7 +175,7 @@ void    RequestHandler::setAddtionalEnv(Path requestPath, const Request &request
 void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const Request &request){
     char *chr[1];
     chr[0] = NULL;
-    setAddtionalEnv(requestPath, request);
+    setAdditionalEnv(requestPath, request);
     dup2(*(pipefd + W_PIPE_READ), STDIN_FILENO); // FIXME throw except
     dup2(*(pipefd + R_PIPE_WRITE), STDOUT_FILENO);
     close(*(pipefd + W_PIPE_READ));
@@ -217,10 +217,16 @@ bool    RequestHandler::isDirectoryFile(const Path requestPath){
     return (opendir(requestPath.c_str()) != NULL);
 }
 
+std::string RequestHandler::getFileExtension(const Path path){
+    size_t  pos = path.rfind('.');
+
+    return (path.substr(pos + 1));
+}
+
 Response    RequestHandler::responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request){
     Response    response;
+    MIMEType::MIMEMap::const_iterator it;
 
-    // TODO Content-type
     if (access(requestPath.c_str(), F_OK) != 0)
         return responseError("404", location.getErrorPage());
     if (request.getMethod() != "GET")
@@ -232,6 +238,9 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
     response.setStatusCode("200");
     response.setBody(readFileToString(requestPath));
     response.setKeepAlive(request.getKeepAlive());
+    it = MIMEType::getInstance().find(getFileExtension(requestPath));
+    if (it != MIMEType::getInstance().end())
+        response.setContentType(it->second);
     return response;
 }
 
