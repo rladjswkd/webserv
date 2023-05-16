@@ -10,10 +10,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <algorithm>
 #include "ResponseHandler.hpp"
 #include "RequestHandler.hpp"
 
-void Server::generateServerSocket(SocketAddr socketAddr)
+void Server::generateServerSocket(const SocketAddr &socketAddr)
 {
 	static struct addrinfo	hints = createaddrHints();
 	struct addrinfo			*result = NULL;
@@ -221,6 +222,22 @@ void Server::handleConnection(const FileDescriptor &epoll, const FileDescriptor 
 	disconnect(epoll, client, DISCONNECTING_MESSAGE);	
 }
 
+void Server::destructClients()
+{
+	for (ClientMap::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		it->second.reset();
+		close(it->first);
+	}
+}
+
+template <typename MapType>
+inline void Server::closeFileDescriptor(MapType &mapObject)
+{
+	for (typename MapType::const_iterator cIt = mapObject.begin(); cIt != mapObject.end(); cIt++)
+		close(cIt->first);
+}
+
 Server::Server(const Config config) : config(config)
 { }
 
@@ -228,10 +245,21 @@ void Server::run()
 {
 	FileDescriptor	epoll;
 
-	initServerSockets();
-	epoll = createEpollObject();
-	for (ServerMap::const_iterator cIt = servers.begin(); cIt != servers.end(); cIt++)
-		controlIOEvent(epoll, EPOLL_CTL_ADD, cIt->first, EPOLLIN);
-	while (true)
-		loopIOEvents(epoll);
+	try
+	{
+		initServerSockets();
+		epoll = createEpollObject();
+		for (ServerMap::const_iterator cIt = servers.begin(); cIt != servers.end(); cIt++)
+			controlIOEvent(epoll, EPOLL_CTL_ADD, cIt->first, EPOLLIN);
+		while (true)
+			loopIOEvents(epoll);
+	}
+	catch (const std::runtime_error &ex)
+	{
+		connection.clear();
+		closeFileDescriptor(cgiClients);
+		destructClients();
+		closeFileDescriptor(servers);
+		throw (ex);
+	}
 }

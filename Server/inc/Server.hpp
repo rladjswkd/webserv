@@ -45,7 +45,7 @@ private:
 
 private:
 	Server();
-	void			generateServerSocket(SocketAddr socketAddr);
+	void			generateServerSocket(const SocketAddr &socketAddr);
 	FileDescriptor	createSocket();
 	addrinfo		createaddrHints();
 	void			throwException(addrinfo *info);
@@ -64,6 +64,9 @@ private:
 	void			sendData(const FileDescriptor &epoll, const FileDescriptor &client);
 	void			receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
 	void			handleConnection(const FileDescriptor &epoll, const FileDescriptor &client);
+	void			destructClients();
+	template <typename MapType>
+	void			closeFileDescriptor(MapType &mapObject);
 
 public:
 	Server(const Config config);
