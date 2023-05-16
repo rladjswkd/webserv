@@ -241,7 +241,7 @@ void ResponseHandler::cgiMessageParsing(Response &inputResponse)
         inputResponse.setCookie(currentCookie);
       }
       else if(isContentTypeHeader(temp))
-        inputResponse.setContentType(temp);
+        inputResponse.setContentType(temp.substr(14, temp.size()));
       ss.get();
     }
     cgiBodySetting(inputResponse);
