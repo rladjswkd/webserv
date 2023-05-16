@@ -37,11 +37,6 @@ class RequestHandler
         typedef BaseBlock::ArgumentList                     ArgumentList;
 
     private:
-        static Request request;
-        static Config config;
-        static std::map<std::string, std::string> mimeMap;
-
-    private:
         RequestHandler();
         static void mimeMapInitial();
         static std::string createDirectoryListing(PathType path);
