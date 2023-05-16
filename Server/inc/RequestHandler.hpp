@@ -6,6 +6,7 @@
 #include "Block.hpp"
 #include "Config.hpp"
 #include "ConfigLocation.hpp"
+#include "MIMEType.hpp"
 #include <unistd.h>
 #include <dirent.h>
 #include <iostream>
@@ -52,7 +53,8 @@ class RequestHandler
         static bool     isDirectoryPath(Path requestPath);
         static Response responseAutoIndex(const ConfigLocation location, const Path &requestPath, const Request &request);
         static bool     isCGIPath(Path requestPath);
-        static void     setAddtionalEnv(Path requestPath, const Request &request);
+        static std::string getFileExtension(const Path path);
+        static void     setAdditionalEnv(Path requestPath, const Request &request);
         static void     executeScript(int *pipefd, const Path requestPath, const Request &request);
         static Response responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request);
         static Response responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
