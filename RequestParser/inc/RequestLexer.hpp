@@ -17,7 +17,7 @@ class RequestLexer
 {
 	public:
 		typedef std::string::size_type						SizeType;
-		typedef std::string												Delimiter, Lexeme, FieldName, FieldValue;
+		typedef std::string												Delimiter, Lexeme, FieldName, FieldValue, StatusCode;
 		typedef int																TokenType;
 		typedef std::pair<TokenType, Lexeme>			Token;
 		typedef std::list<Token>									Tokens;
@@ -26,30 +26,28 @@ class RequestLexer
 
 	private:	// constants
 		static const Delimiter	WHITESPACES;
+		static const StatusCode	CLIENT_ERROR;
+		static const char		*CRLF;
+	// private:
+		// static std::string	requestMessage;
 
 	private:
-		static std::string	requestMessage;
-
-	private:
-		static void				startLineTokenize(Tokens &tokens);
-		static void				headerLineTokenize(Tokens &tokens);
-		static void				bodyLineTokenize(Tokens &tokens);
-		static void				errorHandling(Tokens &tokens, const char *code);
+		static void				startLineTokenize(Tokens &tokens, std::string &requestMessage);
+		static void				headerLineTokenize(Tokens &tokens, std::string &requestMessage);
+		static void				bodyLineDoTokenize(Tokens &tokens, const std::string &requestMessage);
+		static void				errorHandling(Tokens &tokens, const std::string &code);
 		
-		static std::string		getLine();
-		static HeaderField		colonSplit(std::string str, char delimiter);
+		static std::string		getLine(std::string &requestMessage);
+		static HeaderField		colonSplit(const std::string &str, const char delimiter);
 		static TokenType evaluateDelimiterLexeme(const Delimiter &delimiter);
-		static void addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter);
-		static bool isDelimiter(char c);
-		static bool isCRLF();
-		static void	mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap mandatoryHeaderMap);
-		static int	isMandatoryHeader(MandatoryHeaderMap mandatoryHeader, std::string str);
+		static void addToken(Tokens &tokens, Lexeme &lexeme, const Lexeme &delimiter);
+		static void	mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap &mandatoryHeaderMap);
 		static MandatoryHeaderMap mandatoryHeaderInitial();
-		static std::string ft_toLower(std::string str);
+		static std::string &ft_toLower(std::string &str);
 		
 	public:
-		static Tokens httpTokenize(std::string inputRequestMessage);
-		static Tokens startLineHeaderLineTokenize(const std::string &inputRequestMessage);
+		// static Tokens httpTokenize(std::string inputRequestMessage);
+		static Tokens startLineHeaderLineTokenize(std::string &inputRequestMessage);
 		static Tokens bodyLineTokenize(const std::string &inputRequestMessage);
 };
 
