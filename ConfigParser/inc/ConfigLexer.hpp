@@ -27,8 +27,8 @@ private:	// constants
 	static const Delimiter	WHITESPACES;
 	static const Delimiter	BRACKET_SEMICOLON;
 
-private:
-	static ConfigFile	configFile;
+// private:
+	// static ConfigFile	configFile;
 
 private:
 	ConfigLexer();
@@ -36,7 +36,7 @@ private:
 	static bool			isNotDelimiter(char c);
 	static bool			isWhiteSpaces(char c);
 	static bool			isBracketOrSemicolon(Delimiter delimiter);
-	static void			processToken(Tokens &tokens);
+	static void			processToken(Tokens &tokens, ConfigFile &configFile);
 	static void    		addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter);
 	static TokenType	evaluateLexeme(const Lexeme &lexeme);
 	static Syntax		initializeSyntax();
