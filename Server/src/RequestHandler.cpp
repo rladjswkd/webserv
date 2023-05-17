@@ -110,7 +110,10 @@ std::string RequestHandler::getDirectoryList(PathType path)
             if (directoryName == "." || directoryName == ".DS_Store")
                 continue;
             directoryList += "<tr> <td> ";
-            directoryList += "<a href=\"" + directoryName + "/\">";
+            if (entry->d_type == DT_DIR)
+                directoryList += "<a href=\"" + directoryName + "/\">";
+            else
+                directoryList += "<a href=\"" + directoryName + "\">";
             directoryList += directoryName;
             directoryList += "</a>";
             directoryList += " </td> ";
