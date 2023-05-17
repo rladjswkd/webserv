@@ -3,7 +3,7 @@
 
 std::string &ResponseHandler::ft_toLower(std::string &str)
 {
-    std::for_each(str.begin(), str.end(), ::tolower);
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
 }
 
