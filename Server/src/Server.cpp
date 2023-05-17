@@ -16,22 +16,43 @@
 
 void Server::generateServerSocket(const SocketAddr &socketAddr)
 {
+	struct addrinfo			*result = getAvailableAddress(socketAddr);
+	const FileDescriptor	socket = createSocket();
+
+	doBind(socket, result);
+	doListen(socket, result);
+	freeaddrinfo(result);
+	servers.insert(std::make_pair(socket, socketAddr));
+}
+
+addrinfo *Server::getAvailableAddress(const SocketAddr &socketAddr)
+{
 	static struct addrinfo	hints = createaddrHints();
 	struct addrinfo			*result = NULL;
-	const FileDescriptor	fd = createSocket();
-	int						bindError;
+	int						retVal = getaddrinfo(extractNumericHost(socketAddr.first), socketAddr.second.c_str(), &hints, &result);
 
-	if (getaddrinfo(extractNumericHost(socketAddr.first), socketAddr.second.c_str(), &hints, &result) != 0)
-		throwException(result);
-	bindError = bind(fd, result->ai_addr, sizeof(sockaddr_in));
-	if (bindError < 0 && errno == EADDRINUSE)	// *:8080과 127.0.0.1:8080이 configuration file에 선언돼있다면 127.0.0.1:8080은 무시하고 넘어가기 위함.
+	if (retVal != 0)
+	{
+		freeaddrinfo(result);
+		throw (std::runtime_error(gai_strerror(retVal)));
+	}
+	return (result);
+}
+
+void Server::doBind(const FileDescriptor socket, addrinfo *result)
+{
+	if (bind(socket, result->ai_addr, sizeof(sockaddr_in)) == 0 || errno == EADDRINUSE) // *:8080과 127.0.0.1:8080이 configuration file에 선언돼있다면 127.0.0.1:8080은 무시하고 넘어가기 위함.
 		return;
-	if (bindError < 0)
-		throwException(result);
-	if (listen(fd, SOMAXCONN) < 0)
-		throwException(result);
 	freeaddrinfo(result);
-	servers.insert(std::make_pair(fd, socketAddr));
+	throw (std::runtime_error(std::strerror(errno)));
+}
+
+void Server::doListen(const FileDescriptor socket, addrinfo *result)
+{
+	if (listen(socket, SOMAXCONN) == 0)
+		return;
+	freeaddrinfo(result);
+	throw (std::runtime_error(std::strerror(errno)));
 }
 
 Server::FileDescriptor Server::createSocket()

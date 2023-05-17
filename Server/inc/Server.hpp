@@ -46,6 +46,9 @@ private:
 private:
 	Server();
 	void			generateServerSocket(const SocketAddr &socketAddr);
+	addrinfo		*getAvailableAddress(const SocketAddr &socketAddr);
+	void			doBind(const FileDescriptor socket, addrinfo *result);
+	void			doListen(const FileDescriptor socket, addrinfo *result);
 	FileDescriptor	createSocket();
 	addrinfo		createaddrHints();
 	void			throwException(addrinfo *info);
