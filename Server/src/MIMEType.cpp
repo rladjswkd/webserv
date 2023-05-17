@@ -121,7 +121,7 @@ MIMEType::MIMEMap MIMEType::createMimeMap()
 
 const MIMEType::MIMEMap & MIMEType::getInstance()
 {
-	static MIMEMap	mimeMap = this->createMimeMap();
+	static MIMEMap	mimeMap = createMimeMap();
 
 	return (mimeMap);
 }
