@@ -1,41 +1,30 @@
 #include "ResponseHandler.hpp"
+#include <algorithm>
 
-Response ResponseHandler::response;
-
-std::string ResponseHandler::ft_toLower(std::string str)
+std::string &ResponseHandler::ft_toLower(std::string &str)
 {
-  for (unsigned int i = 0; i < str.length(); i++) {
-    str[i] = std::tolower(str[i]);
-  }
+    std::for_each(str.begin(), str.end(), ::tolower);
 	return str;
 }
 
-bool ResponseHandler::isErrorStatusCode()
+bool ResponseHandler::isErrorStatusCode(const Response &response)
 {
     Response::StatusCodeType statusCode = response.getStatusCode();
-    if (statusCode.find("4") == 0 || statusCode.find("5") == 0)
-        return true;
-    return false;
+
+    return (statusCode.find("4") == 0 || statusCode.find("5") == 0);
 }
 
-ResponseHandler::StatusTextMapType ResponseHandler::initialStatusTextMap()
-{
-    return StatusText().getStatusTextMap();
-}
-
-ResponseHandler::StartLineType ResponseHandler::createStartLine()
+ResponseHandler::StartLineType ResponseHandler::createStartLine(const Response &response)
 {
     StartLineType startLine = "";
-    StatusTextMapType statusTextMap = initialStatusTextMap();
-
+    StatusTextMapType statusTextMap = StatusText().getStatusTextMap();
+    StatusCodeType  statusCode = response.getStatusCode();
 
     startLine += HTTP_VERSION;
     startLine += SP;
-    if (statusTextMap.count(response.getStatusCode()) == 0)
-        std::cout << "code : " << response.getStatusCode() << " doesn't exist in the statusTextMap." << std::endl;
-    startLine += response.getStatusCode();
+    startLine += statusCode;
     startLine += SP;
-    startLine += statusTextMap[response.getStatusCode()];
+    startLine += statusTextMap[statusCode];
     startLine += CRLF;
 
     return startLine;
@@ -53,19 +42,19 @@ ResponseHandler::DateType ResponseHandler::getCurrentTime() {
     return currentTime;
 }
 
-std::string ResponseHandler::sizet_to_string(size_t value) 
+std::string ResponseHandler::sizet_to_string(const size_t value) 
 {
     std::stringstream ss;
     ss << value;
     return ss.str();
 }
 
-ResponseHandler::ContentLengthType ResponseHandler::getContentLength()
+ResponseHandler::ContentLengthType ResponseHandler::getContentLength(const Response &response)
 {
     return sizet_to_string(response.getBody().length());    
 }
 
-ResponseHandler::CookieStringType ResponseHandler::getCookieString()
+ResponseHandler::CookieStringType ResponseHandler::getCookieString(const Response &response)
 {
     ResponseHandler::CookieStringType cookieString = "";
     cookieString = response.getCookie();
@@ -74,15 +63,12 @@ ResponseHandler::CookieStringType ResponseHandler::getCookieString()
     return cookieString;
 }
 
-bool ResponseHandler::isRedirectStatusCode()
+bool ResponseHandler::isRedirectStatusCode(const Response &response)
 {
-    Response::StatusCodeType statusCode = response.getStatusCode();
-    if (statusCode.find("3") == 0)
-        return true;
-    return false;
+    return (response.getStatusCode().find("3") == 0);
 }
 
-ResponseHandler::RedirectLocationType ResponseHandler::createRedirectLocation()
+ResponseHandler::RedirectLocationType ResponseHandler::createRedirectLocation(const Response &response)
 {
     ResponseHandler::RedirectLocationType redirectLocation = "";
 
@@ -92,16 +78,16 @@ ResponseHandler::RedirectLocationType ResponseHandler::createRedirectLocation()
     return redirectLocation;
 }
 
-bool ResponseHandler::isKeepAlive()
+bool ResponseHandler::isKeepAlive(const Response &response)
 {
     return response.isKeepAlive();
 }
 
-ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive()
+ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive(const Response &response)
 {
     std::string connection;
 
-    if (isKeepAlive())
+    if (isKeepAlive(response))
         connection = "Connection: Keep-Alive";
     else
         connection = "Connection: close";
@@ -109,7 +95,7 @@ ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive()
     return connection;
 }
 
-ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
+ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine(const Response &response)
 {
     HeaderLineType headerLine = "";
     DateType currentTime = getCurrentTime();
@@ -126,51 +112,36 @@ ResponseHandler::HeaderLineType ResponseHandler::createHeaderLine()
 
     //content-length
     headerLine += "Content-Length: ";
-    headerLine += getContentLength();
+    headerLine += getContentLength(response);
     headerLine += CRLF;
     
     //cookie
-    headerLine += getCookieString();
+    headerLine += getCookieString(response);
     
     //redirection
-    if (isRedirectStatusCode())
-        headerLine += createRedirectLocation();
+    if (isRedirectStatusCode(response))
+        headerLine += createRedirectLocation(response);
 
     //Connection(keepAlive)
-    headerLine += createKeepAlive();
+    headerLine += createKeepAlive(response);
     
     //last CRLF
     headerLine += CRLF;
     return headerLine;
 }
 
-ResponseHandler::BodyType ResponseHandler::createBody()
-{
-    return response.getBody();
-}
-
-ResponseHandler::ResponseMessageType ResponseHandler::pasteAll(StartLineType &startLine, HeaderLineType &headerLine, BodyType &body)
-{
-    ResponseMessageType responseMessage;
-
-    responseMessage += startLine;
-    responseMessage += headerLine;
-    responseMessage += body;
-    return responseMessage;
-}
-
-ResponseHandler::ResponseMessageType ResponseHandler::createNormalMessage()
+ResponseHandler::ResponseMessageType ResponseHandler::createNormalMessage(const Response &response)
 {
     ResponseMessageType responseMessage, startLine, headerLine, body;
 
-    startLine = createStartLine();
-    headerLine = createHeaderLine();
-    body = createBody();
-    responseMessage = pasteAll(startLine, headerLine, body);
+    startLine = createStartLine(response);
+    headerLine = createHeaderLine(response);
+    body = response.getBody();
+    responseMessage = startLine + headerLine + body;
     return responseMessage;
 }
 
-ResponseHandler::BodyType ResponseHandler::getErrorPageBody()
+ResponseHandler::BodyType ResponseHandler::getErrorPageBody(const Response &response)
 {
     std::string fileLocation = ERROR_PAGE_LOCATION + response.getStatusCode() + ".html";
     std::ifstream file(fileLocation.c_str());
@@ -179,38 +150,17 @@ ResponseHandler::BodyType ResponseHandler::getErrorPageBody()
     return buffer.str();
 }
 
-ResponseHandler::ResponseMessageType ResponseHandler::createErrorMessage()
+ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(const Response &response)
 {
-    ResponseMessageType errorMessage, startLine, headerLine, body;
-
-    startLine = createStartLine();
-    // body = getErrorPageBody();
-    // response.setBody(body); //content Length가 header쪽에서 response body를 보고 바껴서 body와 header 순서를 바꿔줌.
-    body = response.getBody();
-    headerLine = createHeaderLine();
-    errorMessage = pasteAll(startLine, headerLine, body);
-    return errorMessage;
+    return (createNormalMessage(response));
 }
 
-ResponseHandler::ResponseMessageType ResponseHandler::createResponseMessage(const Response &inputResponseMessage)
-{
-    ResponseMessageType outputResponseMessage;
-    
-    response = inputResponseMessage;
-    // if (!isErrorStatusCode())
-    outputResponseMessage = createNormalMessage();
-    // else
-    //     outputResponseMessage = createErrorMessage();
-    return outputResponseMessage; 
-}
-
-
-bool ResponseHandler::isSetCookieHeader(std::string str)
+bool ResponseHandler::isSetCookieHeader(std::string &str)
 {
     return (ft_toLower(str).find("set-cookie: ") == 0);
 }
 
-bool ResponseHandler::isContentTypeHeader(std::string str)
+bool ResponseHandler::isContentTypeHeader(std::string &str)
 {
     return (ft_toLower(str).find("content-type: ") == 0);
 }

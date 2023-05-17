@@ -17,17 +17,18 @@ class RequestParser
   typedef RequestLexer::Tokens Tokens;
   typedef RequestLexer::Token Token;
   typedef RequestLexer::SizeType SizeType;
+  // typedef RequestLexer::StatusCode  StatusCode;
+  typedef std::string StatusCode;
   typedef std::string Space, HttpVersion, FieldName, FieldValue, Port, BodyType;
   typedef int HeaderType;
-
 
   private:
     //startline 검사
     static void startLineValidity(Tokens &tokens, Request &request);
     static void headerLineValidity(const Tokens &tokens, Request &request);
     static void bodyLineValidity(const Tokens &tokens, Request &request);
-    static void errorHandling(const char *code, Request &request);
-    static void throwError(const char *code, const std::string &errorReason);
+    static void errorHandling(const std::string &code, Request &request);
+    static void throwError(const std::string &code, const std::string &errorReason);
 
     static void previousErrorCheck(const Tokens &tokens);
     static bool isMethod(const std::string &str);
@@ -64,6 +65,7 @@ class RequestParser
   private:	// constants
     static const Space	SPACE;
     static const HttpVersion HTTPVERSION;
+    static const StatusCode CLIENT_ERROR;
 
   public:
     // static Request httpParser(Tokens &tokens);//TODO: remove

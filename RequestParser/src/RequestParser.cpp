@@ -1,15 +1,14 @@
 #include "RequestParser.hpp"
+#include <algorithm>
 
 const RequestParser::Space RequestParser::SPACE = SP_LITERAL;
 const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
-
+const RequestParser::StatusCode RequestParser::CLIENT_ERROR = "400";  
 //util__
 std::string &RequestParser::ft_toLower(std::string &str)
 {
-  for (unsigned int i = 0; i < str.length(); i++) {
-    str[i] = std::tolower(str[i]);
-  }
-	return str;
+  std::for_each(str.begin(), str.end(), ::tolower);
+	return (str);
 }
 
 std::string &RequestParser::trimAll(std::string &str)
@@ -71,11 +70,11 @@ void RequestParser::queryStringSyntaxCheck(const std::string &uri, Request &requ
 
   uriList = splitValue(uri, '?');
   if (uriList.size() != 2)
-    throwError("400", "uri syntax error!");
+    throwError(CLIENT_ERROR, "uri syntax error!");
 
   queryString = *(--uriList.end());
   if (queryString.find("=") == std::string::npos)
-    throwError("400", "uri syntax error!");
+    throwError(CLIENT_ERROR, "uri syntax error!");
   
   queryStringList = splitValue(queryString, '&');
   Request::UriListType::iterator it = queryStringList.begin();
@@ -83,7 +82,7 @@ void RequestParser::queryStringSyntaxCheck(const std::string &uri, Request &requ
   {
     keyValueList = splitValue((*it), '=');
     if (keyValueList.size() != 2 || (*keyValueList.begin()).length() == 0 || (*(++keyValueList.begin())).length() == 0)
-      throwError("400", "queryString syntax error!");
+      throwError(CLIENT_ERROR, "queryString syntax error!");
     request.setQueryStringMap(*keyValueList.begin(), *(++keyValueList.begin()));
   }
   request.setUriPath(uri.substr(0, uri.length() - queryString.length() - 1));
@@ -111,9 +110,9 @@ void RequestParser::startLineValidity(Tokens &tokens, Request &request)
   Token httpVersion = *(tokens.begin());
   tokens.pop_front();
   if (!isMethod(method.second))
-    throwError("400", "startline method syntax error!");
+    throwError(CLIENT_ERROR, "startline method syntax error!");
   if (!isSpace(sp1.second) || !isSpace(sp2.second))
-    throwError("400", "startline SP syntax error!");
+    throwError(CLIENT_ERROR, "startline SP syntax error!");
   if (isQueryString(uri.second))
     queryStringSyntaxCheck(uri.second, request);
   else
@@ -134,16 +133,16 @@ void RequestParser::hostPortCheck(const Port &port, Request &request)
 {
   int portNum = atoi(port.c_str());
   if (portNum == 0 || (portNum < 1024 || portNum > 49151))
-    throwError("400", "host port syntax error!");
+    throwError(CLIENT_ERROR, "host port syntax error!");
   request.setPort(port);
 }
 
 void RequestParser::hostValidity(const FieldValue &fieldValue, Request &request)
 {
   if (fieldValue.empty()) //fieldValue 비었는지 확인함.
-    throwError("400", "field value empty!");
+    throwError(CLIENT_ERROR, "field value empty!");
   if (request.getHost().size() > 0) //Host 2개 이상 들어왔는지 체크, 이미 Host에 넣었으면 size가 0이상
-    throwError("400", "host field is allowed only one!");
+    throwError(CLIENT_ERROR, "host field is allowed only one!");
   SizeType pos = fieldValue.find(":");
   SizeType len = fieldValue.length(); //naver.com:8000
   if (pos != std::string::npos)
@@ -171,9 +170,9 @@ void RequestParser::transferEncodingValidity(const FieldValue &fieldValue, Reque
     if (cnt == 1 && currStr == "chunked") //처음에 오면 괜찮음.
       chunked = 1;
     if (chunked == 0 && (cnt > 1 && cnt < len)) // 중간에 chunked 나오면 에러처리
-      throwError("400", "chunked syntax error!");
+      throwError(CLIENT_ERROR, "chunked syntax error!");
     if (chunked == 1 && cnt > 1 && currStr.length() > 0) //chunked가 1개가 아니거나, chunked이후에 다른 것이 나오면 문법오류
-      throwError("400", "chunked syntax error!");
+      throwError(CLIENT_ERROR, "chunked syntax error!");
     if (chunked == 0 && cnt == len && currStr == "chunked") //마지막에 chunked있으면 ok
       chunked = 1;
   }
@@ -196,9 +195,9 @@ void RequestParser::contentLengthValidity(const FieldValue &fieldValue, Request 
   {
     contentLength = atoi((*it).c_str());
     if (!contentLength) //숫자 외에 다른 것이 써져 있으면 문법 오류
-      throwError("400", "content length syntax error!");
+      throwError(CLIENT_ERROR, "content length syntax error!");
     if (contentLength != checkNum) //뒤 숫자가 앞과 다르면 문법 오류
-      throwError("400", "content length syntax error!");
+      throwError(CLIENT_ERROR, "content length syntax error!");
   }
   request.setContentLength(contentLength);
   request.setHeaderFields("content-length","content-length_value");
@@ -215,7 +214,7 @@ void RequestParser::cookieValidity(FieldValue &fieldValue, Request &request)
   {
     cookieKeyValue = splitValue((*it), '=');
     if (cookieKeyValue.size() != 2) //=이 없거나, 1개 이상이면 문법 오류
-      throwError("400", "cookie syntax error!");
+      throwError(CLIENT_ERROR, "cookie syntax error!");
     request.setCookie(trimAll(*(cookieKeyValue.begin())), trimAll(*(--cookieKeyValue.end())));
   }
   request.setCookieString(trimAll(fieldValue));
@@ -248,7 +247,7 @@ void RequestParser::mandatoryHeaderValidity(const Token &fieldNameToken, Token &
   FieldValue  &fieldValue = fieldValueToken.second;
 
   if (isFieldNameSpace(fieldNameToken.second))
-    throwError("400", "fieldname is not allowed SP!");
+    throwError(CLIENT_ERROR, "fieldname is not allowed SP!");
   switch (fieldNameToken.first)
   {
     case HOST:
@@ -271,7 +270,7 @@ void RequestParser::mandatoryHeaderValidity(const Token &fieldNameToken, Token &
 void RequestParser::nonMandatoryHeaderValidity(const FieldName &fieldName, FieldValue &fieldValue, Request &request)
 {
   if (isFieldNameSpace(fieldName))
-    throwError("400", "fieldname is not allowed SP!");
+    throwError(CLIENT_ERROR, "fieldname is not allowed SP!");
   request.setHeaderFields(fieldName, trimAll(fieldValue));
 }
 
@@ -294,7 +293,7 @@ bool RequestParser::isInMandatoryHeader(const Tokens &tokens)
       host = 1;
   }
   if (host == 0)
-    throwError("400", "host must be only one!");
+    throwError(CLIENT_ERROR, "host must be only one!");
   
   return true;
 }
@@ -328,7 +327,7 @@ void RequestParser::headerLineValidity(const Tokens &tokens, Request &request)
       fieldNameTokenIt = (it);
       fieldValueTokenIt = (++it);
       if (fieldValueTokenIt == tokens.end())
-        throwError("400", "header field syntax error!");
+        throwError(CLIENT_ERROR, "header field syntax error!");
       headerCheck(*fieldNameTokenIt, const_cast<Token &>(*fieldValueTokenIt), request);
     }
   }
@@ -357,7 +356,7 @@ Request::ChunkedListType RequestParser::splitBodyData(const std::string &input) 
     while (getline(ss, temp, '\r')) {
       ss.get(checkN);
       if (checkN != '\n')
-        throwError("400", "body syntax error!");
+        throwError(CLIENT_ERROR, "body syntax error!");
       result.push_back(temp);
     }
     return result;
@@ -369,7 +368,7 @@ double RequestParser::chunkedLengthConvert(const std::string &str)
   double num = strtol(str.c_str(), &end, 16);
   
   if (*end != '\0' && *end != ';')
-    throwError("400", "chunked body number syntax error!");
+    throwError(CLIENT_ERROR, "chunked body number syntax error!");
   return num;
 }
 
@@ -401,7 +400,7 @@ void RequestParser::chunkedProcess(Request &request)
       break;
     line = getBodyLine(body);
     if ((line).length() != chunkedLength)
-      throwError("400", "chunked body syntax error!");
+      throwError(CLIENT_ERROR, "chunked body syntax error!");
     bodyConverted.append(line);
   }
   request.setBody(bodyConverted);
@@ -419,19 +418,19 @@ void RequestParser::multipartFormDataIdProcess(Request &request) //TODO: reduce 
       break;
 
     if (id != "--" + multipartFormDataId)
-      throwError("400", "multipart form data id error!");
+      throwError(CLIENT_ERROR, "multipart form data id error!");
     
     contentDisposition = getBodyLine(body);
     if (id.length() == 0 || ft_toLower(contentDisposition).find("content-disposition") != 0)
-      throwError("400", "content-disposition error!");
+      throwError(CLIENT_ERROR, "content-disposition error!");
     
     contentType = getBodyLine(body);
     if (contentType.length() == 0 || ft_toLower(contentType).find("content-type") != 0)
-      throwError("400", "content-type error!");
+      throwError(CLIENT_ERROR, "content-type error!");
  
     emptyArea = getBodyLine(body);
     if (!emptyArea.empty())
-      throwError("400", "body sytax(multipart form) error!");
+      throwError(CLIENT_ERROR, "body sytax(multipart form) error!");
     
     bodyPiece = getBodyLine(body);
     if (bodyPiece.length() != 0)
@@ -451,14 +450,14 @@ void RequestParser::bodyLineValidity(const Tokens &tokens, Request &request)
     request.setContentLength(request.getBody().length());
 }
 
-void RequestParser::throwError(const char *code, const std::string &errorReason)
+void RequestParser::throwError(const std::string &code, const std::string &errorReason)
 {
   std::cout << "Error : " << errorReason << std::endl;
   std::cout << "Error code : " << code << std::endl;
   throw code;
 }
 
-void RequestParser::errorHandling(const char *code, Request &request)
+void RequestParser::errorHandling(const std::string &code, Request &request)
 {
   request.setErrorCode(code);
 }
@@ -497,7 +496,7 @@ void RequestParser::startLineHeaderLineParsing(Tokens &tokens, Request &request)
     startLineValidity(tokens, request);
     headerLineValidity(tokens, request);
   }
-  catch(const char *code)
+  catch (const std::string &code)
   {
     errorHandling(code, request);
   }
@@ -510,7 +509,7 @@ void  RequestParser::bodyLineParsing(const Tokens &tokens, Request &request)
     previousErrorCheck(tokens);
     bodyLineValidity(tokens, request);
   }
-  catch(const char *code)
+  catch (const std::string &code)
   {
     errorHandling(code, request);
   }

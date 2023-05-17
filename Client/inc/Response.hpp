@@ -21,14 +21,14 @@ class Response
         bool        keepAlive;
 
     public:
-        std::string getStatusCode();
-        std::string getContentLength();
-        std::string getContentType();
-        std::string getBody();
-        std::string getDate();
-        std::string getLocation();
-        std::string getCookie();
-        bool        isKeepAlive();
+        std::string getStatusCode() const;
+        std::string getContentLength() const;
+        std::string getContentType() const;
+        std::string getBody() const;
+        std::string getDate() const;
+        std::string getLocation() const;
+        std::string getCookie() const;
+        bool        isKeepAlive() const;
 
         void setStatusCode(std::string statusCode);
         void setContentLength(std::string contentLength);
