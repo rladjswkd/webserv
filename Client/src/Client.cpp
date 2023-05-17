@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <sstream>
 
-Client::Client() : state(STATE_REQUEST_FIELD_LINE)
+Client::Client() : state(STATE_REQUEST_FIELD_LINE), message(EMPTY_STRING)
 { }
 
 void Client::appendEssentialPart(const Message &newRead)
@@ -25,7 +25,7 @@ void Client::appendChunked(const Message &newRead)
 	message.append(newRead);
 	if (message.find(CRLFCRLF, message.size() - 3) != std::string::npos)
 	{
-		RequestParser::bodyLineParsing(RequestLexer::bodyLineTokenize(message), requestObj);
+		RequestParser::bodyLineParsing(RequestLexer::bodyLineTokenize(message.toString()), requestObj);
 		state = STATE_COMPLETE;
 	}
 }
@@ -35,14 +35,14 @@ void Client::appendContentLength(const Message &newRead)
 	message.append(newRead);
 	if (message.size() >= requestObj.getContentLength())
 	{
-		RequestParser::bodyLineParsing(RequestLexer::bodyLineTokenize(message), requestObj);
+		RequestParser::bodyLineParsing(RequestLexer::bodyLineTokenize(message.toString()), requestObj);
 		state = STATE_COMPLETE;
 	}
 }
 
 void Client::checkMessageBodyFormat(const size_t &headerLineEndPos)
 {
-	RequestLexer::Tokens	tokens = RequestLexer::startLineHeaderLineTokenize(message);
+	RequestLexer::Tokens tokens = RequestLexer::startLineHeaderLineTokenize(message.buffer);
 
 	state = STATE_COMPLETE;
 	RequestParser::startLineHeaderLineParsing(tokens, requestObj);
@@ -69,11 +69,11 @@ std::string Client::convertToString(const size_t &contentLength)
 
 void Client::appendCGI(const Message &newRead)
 {
-	static size_t	contentLength = 0;
+	static size_t contentLength = 0;
 
-	if (newRead.size() == 0)	// this means that client has closed its socket.
+	if (newRead.size() == 0) // this means that client has closed its socket.
 	{
-		responseObj.setBody(message);
+		responseObj.setBody(message.toString());
 		responseObj.setContentLength(convertToString(contentLength));
 		contentLength = 0;
 		state = STATE_COMPLETE;
@@ -139,28 +139,66 @@ bool Client::isKeepAlive()
 	return (responseObj.isKeepAlive());
 }
 
-const char *Client::getResponseMessage()
+const char *Client::getResponseMessageBuffer()
 {
-	return (response);
+	return (message.buffer.c_str() + message.sent);
 }
 
-void Client::setResponseMessage(const Message &response)
+size_t Client::getResponseLengthToSend()
 {
-	this->message = response;
-	this->response = message.c_str();
+	return (message.buffer.size() - message.sent);
 }
 
-char	Client::updateResponsePointer(const ssize_t &sent)
+size_t Client::updateMessageBuffer(const size_t sent)
 {
-	response += sent;
-	return (*response);
+	message.sent += sent;
+	return (getResponseLengthToSend());
+}
+
+void Client::setResponseMessageBuffer(const Message &response)
+{
+	this->message = MessageBuffer(response);
 }
 
 void Client::reset()
 {
 	state = STATE_REQUEST_FIELD_LINE;
 	message.clear();
-	response = 0;
+	// response = 0;
 	requestObj = Request();
 	responseObj = Response();
+}
+
+Client::MessageBuffer::MessageBuffer(const std::string &response) : buffer(response), sent()
+{
+}
+
+size_t Client::MessageBuffer::size() const
+{
+	return (buffer.size());
+}
+
+void Client::MessageBuffer::append(const std::string &str)
+{
+	buffer.append(str);
+}
+
+size_t Client::MessageBuffer::find(const std::string &str, size_t pos)
+{
+	return (buffer.find(str, pos));
+}
+
+void Client::MessageBuffer::clear()
+{
+	buffer.clear();
+}
+
+void Client::MessageBuffer::erase(size_t pos, size_t n)
+{
+	buffer.erase(pos, n);
+}
+
+const std::string &Client::MessageBuffer::toString()
+{
+	return (buffer);
 }

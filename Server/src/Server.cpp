@@ -171,7 +171,7 @@ void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe,
 		controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLERR);
 		cgiClients.erase(pipe);
 		ResponseHandler::cgiMessageParsing(const_cast<Response &>(target.getResponseObject()));
-		target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject()));
+		target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject()));
 		while (waitpid(0, 0, WNOHANG) == 0);
 	}
 }
@@ -182,7 +182,7 @@ void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &c
 
 	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[client]), config, const_cast<Request &>(target.getRequestObject())));
 	if (cgiPipe == 0)
-		return (target.setResponseMessage(ResponseHandler::createResponseMessage(target.getResponseObject())));
+		return (target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject())));
 	fcntl(cgiPipe, F_SETFL, O_NONBLOCK); // Without this, cgiPipe must be blocking.
 	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
 	cgiClients[cgiPipe] = &target;
@@ -192,15 +192,13 @@ void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &c
 void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 {
 	Client		&target = clients[client];
-	const char	*response = target.getResponseMessage();
-	ssize_t		sent = send(client, response, std::strlen(response), MSG_DONTWAIT);
+	const char	*response = target.getResponseMessageBuffer();
+	ssize_t		sent = send(client, response, target.getResponseLengthToSend(), MSG_DONTWAIT);
 
 	if (sent < 0)
 		return (disconnect(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	if (target.updateResponsePointer(sent) == CHAR_NULL)
+	if (target.updateMessageBuffer(sent) == 0)
 		handleConnection(epoll, client);
-		// target.reset();	//TODO:	target의 connection이 close면 연결 닫고, keep alive면 연결 유지 및 reset 호출하게 구현
-		//receiveData에서 0을 수신해서 연결을 끊었을 때를 생각해보자. 여기서 connection option을 확인했을 때 그 값이 close여서 disconnect를 다시 호출할 때 문제가 없을까? -> 동작에 문제는 없지만 close가 -1을 반환하고 errno가 EBADF로 설정될 것이다.
 }
 
 void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
