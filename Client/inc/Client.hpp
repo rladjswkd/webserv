@@ -20,16 +20,29 @@
 
 class Client
 {
+private:
+	class MessageBuffer
+	{
+	public:
+		std::string	buffer;
+		size_t		sent;
+
+		MessageBuffer(const std::string &response);
+		void				append(const std::string &str);
+		size_t				find(const std::string &str, size_t pos);
+		void				clear();
+		void				erase(size_t pos, size_t n);
+		size_t				size() const;
+		const std::string	&toString();
+	};
+
 public:
 	typedef std::string				Message, Host, Port;
-	typedef const char *			ResponsePointer;
 	typedef std::pair<Host, Port>	SocketAddr;
 
 private:
-	// SocketAddr		connectedServer;
 	unsigned short	state;
-	Message			message;
-	ResponsePointer	response;
+	MessageBuffer	message;
 	Request			requestObj;
 	Response		responseObj;
 
@@ -42,20 +55,25 @@ private:
 
 public:
 	Client();
-	const char		*getResponseMessage();
-	void			setResponseMessage(const Message &response);
-	char			updateResponsePointer(const ssize_t &sent);
-	void			reset();
-	void			appendCGI(const Message &newRead);
-	void			appendMessage(const Message &newRead);
-	bool			isComplete();
-	void			setCGIState();
-	void			setDisconnectedState();
-	bool			isDisconnected();
-	const Request	&getRequestObject();
-	void			setResponseObject(Response responseObj);
-	const Response	&getResponseObject();
 
-	bool			isKeepAlive();
+	void				setResponseMessageBuffer(const Message &response);
+	const char			*getResponseMessageBuffer();
+	size_t				getResponseLengthToSend();
+	size_t				updateMessageBuffer(const size_t sent);
+
+	void				appendCGI(const Message &newRead);
+	void				appendMessage(const Message &newRead);
+
+	void				setResponseObject(Response responseObj);
+	const Request		&getRequestObject();
+	const Response		&getResponseObject();
+	
+	void				setCGIState();
+	void				setDisconnectedState();
+	bool				isComplete();
+	bool				isDisconnected();
+
+	bool				isKeepAlive();
+	void				reset();
 };
 #endif
