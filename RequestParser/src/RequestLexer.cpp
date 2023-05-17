@@ -146,7 +146,7 @@ void	RequestLexer::errorHandling(Tokens &tokens, const std::string &code)
 	tokens.push_back(std::make_pair(ERROR, code)); //code가 char형인데 되는지 모르겠음. 여기는 string
 }
 
-RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(std::string &requestMessage)
+RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(std::string requestMessage)
 {
 	Tokens	tokens;
 
