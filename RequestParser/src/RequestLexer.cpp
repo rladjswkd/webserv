@@ -7,7 +7,7 @@ const RequestLexer::StatusCode	RequestLexer::CLIENT_ERROR = "400";
 
 std::string &RequestLexer::ft_toLower(std::string &str)
 {
-	std::for_each(str.begin(), str.end(), ::tolower);
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return (str);
 }
 
