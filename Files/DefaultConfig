@@ -2,15 +2,4 @@ server {
 	listen	*:8080;
 	location / {
 	}
-	location /webserv_phptest/php-cgi/ {
-		index index.php;
-		alias ./cgi-bin/php-cgi/;
-	}
-	location /webserv_phptest/py-cgi/cgi-bin/ {
-		index index.py;
-		alias ./cgi-bin/py-cgi/cgi-bin/;
-	}
-	location /webserv_phptest/py-cgi/ {
-		alias ./webserv_phptest/py-cgi/;
-	}
 }
