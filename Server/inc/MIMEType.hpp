@@ -12,9 +12,9 @@ public:
 
 private:
 	MIMEType();
-	MIMEMap	createMimeMap();
+	static MIMEMap	createMimeMap();
 
 public:
-	const MIMEMap	&getInstance();
+	static const MIMEMap	&getInstance();
 };
 #endif
