@@ -66,7 +66,7 @@ private:
 	void			handleConnection(const FileDescriptor &epoll, const FileDescriptor &client);
 	void			destructClients();
 	template <typename MapType>
-	void			closeFileDescriptor(MapType &mapObject);
+	void			closeFileDescriptor(MapType &mapObject, const FileDescriptor &epoll);
 
 public:
 	Server(const Config config);

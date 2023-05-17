@@ -149,7 +149,7 @@ void Server::disconnect(const FileDescriptor &epoll, const FileDescriptor &clien
 	if (clients[client].isDisconnected())
 		return;
 	clients[client].setDisconnectedState();
-	controlIOEvent(epoll, EPOLL_CTL_DEL, client, 0);
+	controlIOEvent(epoll, EPOLL_CTL_DEL, client, EPOLLIN);
 	connection.erase(client);
 	clients.erase(client);
 	close(client);
@@ -168,7 +168,7 @@ void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe,
 	receiveData(epoll, pipe, target);
 	if (target.isComplete())
 	{
-		controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLERR);
+		controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
 		cgiClients.erase(pipe);
 		ResponseHandler::cgiMessageParsing(const_cast<Response &>(target.getResponseObject()));
 		target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject()));
@@ -230,10 +230,13 @@ void Server::destructClients()
 }
 
 template <typename MapType>
-inline void Server::closeFileDescriptor(MapType &mapObject)
+inline void Server::closeFileDescriptor(MapType &mapObject, const FileDescriptor &epoll)
 {
 	for (typename MapType::const_iterator cIt = mapObject.begin(); cIt != mapObject.end(); cIt++)
+	{
+		controlIOEvent(epoll, EPOLL_CTL_DEL, cIt->first, EPOLLIN);
 		close(cIt->first);
+	}
 }
 
 Server::Server(const Config config) : config(config)
@@ -255,9 +258,10 @@ void Server::run()
 	catch (const std::runtime_error &ex)
 	{
 		connection.clear();
-		closeFileDescriptor(cgiClients);
+		closeFileDescriptor(cgiClients, epoll);
 		destructClients();
-		closeFileDescriptor(servers);
+		closeFileDescriptor(servers, epoll);
+		close(epoll);
 		throw (ex);
 	}
 }
