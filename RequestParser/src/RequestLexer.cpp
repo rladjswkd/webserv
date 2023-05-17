@@ -1,29 +1,14 @@
 #include "RequestLexer.hpp"
+#include <algorithm>
 
-const char *g_CRLF = "\r\n";
-std::string	RequestLexer::requestMessage;
+const char 						*RequestLexer::CRLF = "\r\n";
 const RequestLexer::Delimiter	RequestLexer::WHITESPACES = WHITESPACES_LITERAL;
+const RequestLexer::StatusCode	RequestLexer::CLIENT_ERROR = "400";
 
-std::string RequestLexer::ft_toLower(std::string str)
+std::string &RequestLexer::ft_toLower(std::string &str)
 {
-  for (unsigned int i = 0; i < str.length(); i++) {
-    str[i] = std::tolower(str[i]);
-  }
-	return str;
-}
-
-bool RequestLexer::isDelimiter(char c)
-{
-    return (WHITESPACES.find(c) != std::string::npos);
-}
-
-bool RequestLexer::isCRLF()
-{
-	SizeType pos = requestMessage.find(g_CRLF);	
-	
-	if (pos == 0)
-		return true;
-	return false;
+	std::for_each(str.begin(), str.end(), ::tolower);
+	return (str);
 }
 
 RequestLexer::TokenType RequestLexer::evaluateDelimiterLexeme(const Delimiter &delimiter)
@@ -35,7 +20,7 @@ RequestLexer::TokenType RequestLexer::evaluateDelimiterLexeme(const Delimiter &d
 	return (ETC);
 }
 
-void RequestLexer::addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter)
+void RequestLexer::addToken(Tokens &tokens, Lexeme &lexeme, const Lexeme &delimiter)
 {
 	if (lexeme.size())		
 		tokens.push_back(std::make_pair(STARTLINE_STR, lexeme));
@@ -43,39 +28,36 @@ void RequestLexer::addToken(Tokens &tokens, Lexeme lexeme, Lexeme delimiter)
 		tokens.push_back(std::make_pair(evaluateDelimiterLexeme(delimiter), ""));
 }
 
-RequestLexer::HeaderField	RequestLexer::colonSplit(std::string str, char delimiter)
+RequestLexer::HeaderField	RequestLexer::colonSplit(const std::string &str, const char delimiter)
 {	
 	SizeType pos = str.find(delimiter);	
-	SizeType len = str.length();
 
 	if (pos == std::string::npos)
-		throw ("400");
-	
-	return std::make_pair(str.substr(0, pos), str.substr(pos + 1, len));
+		throw (CLIENT_ERROR);
+	return (std::make_pair(str.substr(0, pos), str.substr(pos + 1, str.length())));
 }
 
-std::string	RequestLexer::getLine()
+std::string	RequestLexer::getLine(std::string &requestMessage)
 {	
-	SizeType pos = requestMessage.find(g_CRLF);
+	SizeType pos = requestMessage.find(CRLF);
 	std::string	line;
 	
 	if (pos == std::string::npos)
-		throw ("400");
+		throw (CLIENT_ERROR);
 	line = requestMessage.substr(0, pos);
-	requestMessage = requestMessage.substr(pos + 2, requestMessage.length());
-	return line;
+	requestMessage.erase(0, pos + 2);
+	return (line);
 }
 
-void	RequestLexer::startLineTokenize(Tokens &tokens)
+void	RequestLexer::startLineTokenize(Tokens &tokens, std::string &requestMessage)
 {	
-	std::string 			startLine = getLine();	
-	std::istringstream		ss(startLine); 
+	std::istringstream		ss(getLine(requestMessage)); 
 	char					currentChar = ss.get();
 	Lexeme	lexeme;		
 
 	while (!ss.eof() || currentChar != EOF)
 	{
-		if (!isDelimiter(currentChar))
+		if (WHITESPACES.find(currentChar) == std::string::npos)
 		{
 			lexeme.push_back(currentChar);
 			currentChar = ss.get();
@@ -111,12 +93,7 @@ RequestLexer::MandatoryHeaderMap RequestLexer::mandatoryHeaderInitial()
 	return mandatoryHeader;
 }
 
-int	RequestLexer::isMandatoryHeader(MandatoryHeaderMap mandatoryHeader, std::string str)
-{
-	return mandatoryHeader.count(str);
-}
-
-void	RequestLexer::mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap mandatoryHeaderMap)
+void	RequestLexer::mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap &mandatoryHeaderMap)
 {
 
 	std::string headerFieldLower = ft_toLower(headerField.first); //headerfield는 대소문자 구별이 없다. 소문자 기준으로 프로그램을 작성하였다.
@@ -129,18 +106,18 @@ void	RequestLexer::mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerFie
 		tokens.push_back(std::make_pair(mandatoryHeaderMap[headerFieldLower + "_value"], headerField.second));
 }
 
-void	RequestLexer::headerLineTokenize(Tokens &tokens)
+void	RequestLexer::headerLineTokenize(Tokens &tokens, std::string &requestMessage)
 {	
 	std::string headerLine;
 	HeaderField	headerField;
 	Lexeme	lexeme;
 	MandatoryHeaderMap mandatoryHeader = mandatoryHeaderInitial();
 
-	while (!isCRLF())
+	while (requestMessage.find(CRLF) != 0)
 	{
-		headerLine = getLine();
+		headerLine = getLine(requestMessage);
 		headerField = colonSplit(headerLine, ':');
-		if (isMandatoryHeader(mandatoryHeader, ft_toLower(headerField.first)))
+		if (mandatoryHeader.find(ft_toLower(headerField.first)) != mandatoryHeader.end())
 			mandatoryHeaderProcess(tokens, headerField, mandatoryHeader);
 		else
 		{
@@ -150,71 +127,50 @@ void	RequestLexer::headerLineTokenize(Tokens &tokens)
 	}
 }
 
-void	RequestLexer::bodyLineTokenize(Tokens &tokens)
+void	RequestLexer::bodyLineDoTokenize(Tokens &tokens, const std::string &requestMessage)
 {
 	std::string body;
 	SizeType len;
 
 	len = requestMessage.length();
-	if (requestMessage.find(g_CRLF) == 0)
+	if (requestMessage.find(CRLF) == 0)
 		body = requestMessage.substr(2, len);
 	else
 		body = requestMessage;
 	tokens.push_back(std::make_pair(BODY, body));
 }
 
-void	RequestLexer::errorHandling(Tokens &tokens, const char *code)
+void	RequestLexer::errorHandling(Tokens &tokens, const std::string &code)
 {
 	tokens.empty();
 	tokens.push_back(std::make_pair(ERROR, code)); //code가 char형인데 되는지 모르겠음. 여기는 string
 }
 
-RequestLexer::Tokens RequestLexer::httpTokenize(std::string inputRequestMessage)	
+RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(std::string &requestMessage)
 {
 	Tokens	tokens;
 
-	requestMessage = inputRequestMessage;
 	try
 	{
-		RequestLexer::startLineTokenize(tokens);
-		RequestLexer::headerLineTokenize(tokens);
-		RequestLexer::bodyLineTokenize(tokens);
+		RequestLexer::startLineTokenize(tokens,  requestMessage);
+		RequestLexer::headerLineTokenize(tokens, requestMessage);
 	}
-	catch(const char *code)
+	catch(const std::string &code)
 	{
 		errorHandling(tokens, code);
 	}
 	return (tokens);
 }
 
-
-RequestLexer::Tokens RequestLexer::startLineHeaderLineTokenize(const std::string &inputRequestMessage)
+RequestLexer::Tokens RequestLexer::bodyLineTokenize(const std::string &requestMessage)
 {
 	Tokens	tokens;
 
-	requestMessage = inputRequestMessage;
 	try
 	{
-		RequestLexer::startLineTokenize(tokens);
-		RequestLexer::headerLineTokenize(tokens);
+		RequestLexer::bodyLineDoTokenize(tokens, requestMessage);
 	}
-	catch(const char *code)
-	{
-		errorHandling(tokens, code);
-	}
-	return (tokens);
-}
-
-RequestLexer::Tokens RequestLexer::bodyLineTokenize(const std::string &inputRequestMessage)
-{
-	Tokens	tokens;
-
-	requestMessage = inputRequestMessage;
-	try
-	{
-		RequestLexer::bodyLineTokenize(tokens);
-	}
-	catch(const char *code)
+	catch(const std::string &code)
 	{
 		errorHandling(tokens, code);
 	}
