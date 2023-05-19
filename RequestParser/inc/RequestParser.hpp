@@ -58,7 +58,7 @@ class RequestParser
     static Request::ChunkedListType splitBodyData(const std::string &input);
     static double chunkedLengthConvert(const std::string &str);
     static void multipartFormDataIdProcess(Request &request);
-    static std::string &ft_toLower(std::string &str);
+    static std::string ft_toLower(std::string str);
     static std::string getBodyLine(BodyType &body);
     static void chunkedContentLengthOverlapCheck(const Tokens &tokens, Request &request);
 

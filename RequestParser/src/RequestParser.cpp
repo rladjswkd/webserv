@@ -5,7 +5,7 @@ const RequestParser::Space RequestParser::SPACE = SP_LITERAL;
 const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
 const RequestParser::StatusCode RequestParser::CLIENT_ERROR = "400";  
 //util__
-std::string &RequestParser::ft_toLower(std::string &str)
+std::string RequestParser::ft_toLower(std::string str)
 {
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return (str);

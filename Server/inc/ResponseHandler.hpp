@@ -27,7 +27,7 @@ class ResponseHandler
         typedef std::map<std::string, std::string> StatusTextMapType, ErrorPageLocationMapType;
 
     private:
-        static std::string &ft_toLower(std::string &str);
+        static std::string ft_toLower(std::string str);
         static bool isErrorStatusCode(const Response &response);
         static ResponseMessageType createNormalMessage(const Response &response);
         static BodyType getErrorPageBody(const Response &response);
