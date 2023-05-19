@@ -191,6 +191,7 @@ void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe,
 	{
 		controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
 		cgiClients.erase(pipe);
+		close(pipe);
 		ResponseHandler::cgiMessageParsing(const_cast<Response &>(target.getResponseObject()));
 		target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject()));
 		while (waitpid(0, 0, WNOHANG) == 0);
