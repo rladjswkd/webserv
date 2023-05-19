@@ -9,6 +9,7 @@ SRCS 		= $(filter-out Tester/*, $(wildcard */src/*.cpp)) main.cpp
 OBJS 		= $(SRCS:.cpp=.o)
 
 all: $(NAME)
+	sh pages.sh
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -g
@@ -21,6 +22,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
+	rm -rf pages
 
 re: fclean all
 

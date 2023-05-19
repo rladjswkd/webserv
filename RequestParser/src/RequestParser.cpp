@@ -442,8 +442,8 @@ void RequestParser::multipartFormDataIdProcess(Request &request) //TODO: reduce 
 void RequestParser::bodyLineValidity(const Tokens &tokens, Request &request)
 {
   inputBodyData(tokens, request);
-  if (request.getMultipartFormDataId().length() > 0)
-    multipartFormDataIdProcess(request);
+  // if (request.getMultipartFormDataId().length() > 0)
+  //   multipartFormDataIdProcess(request);
   if (request.getChunked())
     chunkedProcess(request);
   if (request.getHeaderFields().count("content-length") == 0)
