@@ -43,7 +43,7 @@ class RequestLexer
 		static void addToken(Tokens &tokens, Lexeme &lexeme, const Lexeme &delimiter);
 		static void	mandatoryHeaderProcess(Tokens &tokens, HeaderField &headerField, MandatoryHeaderMap &mandatoryHeaderMap);
 		static MandatoryHeaderMap mandatoryHeaderInitial();
-		static std::string &ft_toLower(std::string &str);
+		static std::string ft_toLower(std::string str);
 		
 	public:
 		// static Tokens httpTokenize(std::string inputRequestMessage);

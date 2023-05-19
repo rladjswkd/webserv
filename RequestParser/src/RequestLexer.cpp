@@ -5,7 +5,7 @@ const char 						*RequestLexer::CRLF = "\r\n";
 const RequestLexer::Delimiter	RequestLexer::WHITESPACES = WHITESPACES_LITERAL;
 const RequestLexer::StatusCode	RequestLexer::CLIENT_ERROR = "400";
 
-std::string &RequestLexer::ft_toLower(std::string &str)
+std::string RequestLexer::ft_toLower(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return (str);
