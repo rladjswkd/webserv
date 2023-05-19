@@ -191,6 +191,7 @@ size_t Client::MessageBuffer::find(const std::string &str, size_t pos)
 void Client::MessageBuffer::clear()
 {
 	buffer.clear();
+	sent = 0;
 }
 
 void Client::MessageBuffer::erase(size_t pos, size_t n)
