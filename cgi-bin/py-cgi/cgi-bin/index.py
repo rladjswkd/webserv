@@ -10,16 +10,16 @@ try:
         key, value = item.strip().split('=')
         if key == 'session_id':
             session_id = value
+        elif key == 'vip_level':
+            vip_level = value
 
     if session_id == 'webserv-Jacob' or session_id == 'irc-David':
         if session_id == 'webserv-Jacob':
             user_id = 'webserv'
             user_name = 'Jacob'
-            vip_level = 1
         elif session_id == 'irc-David':
             user_id = 'irc'
             user_name = 'David'
-            vip_level = 2
         
         printHttp = f'''
 <!DOCTYPE html>

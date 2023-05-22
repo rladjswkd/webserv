@@ -22,14 +22,14 @@ password = form.getvalue("pw")
 # Check if the username and password are correct
 if username == "webserv" and password == "no":
     print(set_cookie("session_id", username + "-Jacob"))
-    print(set_cookie("Jacob_item", "item1", True))
+    print(set_cookie("vip_level", "1", True))
     print("")
     body_upper()
     print("<script>location.replace('index.py');</script>")
     print("</body>")
 elif username == "irc" and password == "yes":
     print(set_cookie("session_id", username + "-David"))
-    print(set_cookie("David_item", "item2", True))
+    print(set_cookie("vip_level", "2", True))
     print("")
     body_upper()
     print("<script>location.replace('index.py');</script>")

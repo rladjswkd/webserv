@@ -16,14 +16,12 @@
       if ($username == 'webserv' && $userpass == 'no') {
          $_SESSION['username'] = $username;
          $_SESSION['name'] = 'Jacob';
-         // setcookie("session_id",'webserv-Jacob');
          echo "<script>location.replace('index.php');</script>";
          exit;
       }
       else if ($username == 'irc' && $userpass == 'yes') {
          $_SESSION['username'] = $username;
          $_SESSION['name'] = 'Daniel';
-         // setcookie("session_id",'irc-Daniel');
          echo "<script>location.replace('index.php');</script>";
          exit;
       }

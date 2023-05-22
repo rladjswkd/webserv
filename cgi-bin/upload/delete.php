@@ -14,12 +14,6 @@ if ($data !== null) {
     exit;
 }
 
-// 파일 이름 추출
-
-// $filename = $_DELETE['filename'];
-// echo 'filename';
-// echo $filename;
-
 // 파일 삭제 작업 수행
 if (file_exists($filename)) {
     unlink($filename);
