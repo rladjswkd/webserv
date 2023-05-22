@@ -230,7 +230,7 @@ void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, 
 
 	if (received < 0)
 		return (disconnect(epoll, fd, RECV_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	target.appendMessage(buffer);
+	target.appendMessage(std::string (buffer, received));
 }
 
 void Server::handleConnection(const FileDescriptor &epoll, const FileDescriptor &client)
