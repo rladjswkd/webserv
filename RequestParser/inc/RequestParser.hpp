@@ -66,6 +66,8 @@ class RequestParser
     static const Space	SPACE;
     static const HttpVersion HTTPVERSION;
     static const StatusCode CLIENT_ERROR;
+		static const StatusCode NOT_IMPLEMENTED;
+		static const StatusCode HTTP_VERSION_NOT_SUPPORTED;
 
   public:
     // static Request httpParser(Tokens &tokens);//TODO: remove
