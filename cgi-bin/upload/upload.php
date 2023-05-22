@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$counter = 1;
 	while (file_exists($upload_path)) {
 		$filename_parts = pathinfo($filename);
-		if ($filename_parts['extension'])
+		if (isset($filename_parts['extension']))
 			$new_filename = $filename_parts['filename'] . '-' . $counter . '.' . $filename_parts['extension'];
 		else
 			$new_filename = $filename_parts['filename'] . '-' . $counter . $filename_parts['extension'];
