@@ -97,7 +97,6 @@
 		window.onload = function() {
 			const directory = './uploads/';
 			const table = document.getElementById('file-table');
-			// alert(fetch(directory));
 			fetch(directory)
 				.then(response => response.text())
 				.then(html => {					
@@ -113,14 +112,16 @@
 						const cell2 = row.insertCell();
 						const deleteButton = document.createElement('button');
 
-						cell1.innerHTML = filename.textContent;
+						<!-- cell1.innerHTML = filename.textContent; -->
+						const link = document.createElement('a');
+						link.href = directory + filename.textContent;
+						link.download = '';
+						link.textContent = filename.textContent;
+						cell1.innerHTML = '';
+						cell1.appendChild(link);
+
 						deleteButton.innerHTML = 'Delete';
-
-						
-
 						deleteButton.addEventListener('click', () => {
-								// const params = new URLSearchParams();
-								// params.append('filename', directory + filename.textContent);
 								const data = { filename: '../../pages/upload_test/uploads/' + filename.textContent };
 								fetch('./delete/delete.php', {
 									method: 'DELETE',

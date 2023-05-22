@@ -244,6 +244,8 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
     it = MIMEType::getInstance().find(getFileExtension(requestPath));
     if (it != MIMEType::getInstance().end())
         response.setContentType(it->second);
+    else
+        response.setContentType("application/octet-stream");
     return response;
 }
 
