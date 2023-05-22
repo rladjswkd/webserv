@@ -88,7 +88,7 @@ ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive(const Response &
     std::string connection;
 
     if (isKeepAlive(response))
-        connection = "Connection: Keep-Alive";
+        connection = "Connection: keep-alive";
     else
         connection = "Connection: close";
     connection += CRLF;

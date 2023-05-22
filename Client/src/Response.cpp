@@ -1,7 +1,7 @@
 #include "Response.hpp"
 
 Response::Response()
-: contentType("Content-Type: text/html"), cookie(""), keepAlive(true)
+: contentType("text/html"), cookie(""), keepAlive(true)
 {
 
 }
