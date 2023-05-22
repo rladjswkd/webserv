@@ -25,6 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		echo 'fail';
 		http_response_code(500);
 	}
+} else
+{
+	http_response_code(400);
 }
 
 

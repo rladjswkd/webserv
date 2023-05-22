@@ -46,6 +46,7 @@ class ResponseHandler
 
         static bool isSetCookieHeader(std::string &str);
         static bool isContentTypeHeader(std::string &str);
+        static bool isStatusCode(std::string &str);
         static void cgiBodySetting(Response &inputResponse);
 
     public:
