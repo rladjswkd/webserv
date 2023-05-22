@@ -29,13 +29,13 @@ void ConfigLexer::processToken(Tokens &tokens, ConfigFile &configFile)
 
 	while (isWhiteSpaces(currentChar))
 		currentChar = fileBuf->snextc();
-	while (currentChar != EOF && isNotDelimiter(currentChar))
+	while (currentChar != (char)EOF && isNotDelimiter(currentChar))
 	{
 		lexeme.push_back(currentChar);
 		currentChar = fileBuf->snextc();
 	}
 	fileBuf->sbumpc();
-	if (currentChar == EOF)
+	if (currentChar == (char)EOF)
 		configFile.setstate(std::ios_base::eofbit);
 	addToken(tokens, lexeme, Lexeme(1, currentChar));
 }

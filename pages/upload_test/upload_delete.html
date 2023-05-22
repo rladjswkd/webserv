@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Upload Files and Delete</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+
+		h1, h2 {
+			color: #333;
+			margin: 0;
+			padding: 1rem;
+		}
+
+		h1 {
+			background-color: #fff;
+			box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.1);
+		}
+
+		h2 {
+			background-color: #eee;
+			box-shadow: 0 0.0625rem 0.125rem rgba(0,0,0,0.05);
+		}
+
+		table {
+			border-collapse: collapse;
+			margin: 1rem;
+			width: calc(100% - 2rem);
+		}
+
+		th, td {
+			border: 1px solid #ccc;
+			padding: 0.5rem;
+			text-align: left;
+		}
+
+		th {
+			background-color: #f7f7f7;
+			font-weight: normal;
+		}
+
+		td:last-child {
+			text-align: center;
+		}
+
+		button {
+			background-color: #f44336;
+			border: none;
+			border-radius: 0.25rem;
+			color: #fff;
+			cursor: pointer;
+			font-size: 1rem;
+			padding: 0.5rem 1rem;
+			transition: background-color 0.2s ease-in-out;
+			width: 100%;						
+		}
+
+		button:hover {
+			background-color: #d32f2f;
+		}
+
+		input[type="file"] {
+			display: block;
+			margin: 1rem;
+		}
+
+		button[type="submit"] {
+			background-color: #4CAF50;
+			color: #fff;
+			cursor: pointer;
+			font-size: 1rem;
+			padding: 0.5rem 1rem;
+			transition: background-color 0.2s ease-in-out;
+		}
+
+		button[type="submit"]:hover {
+			background-color: #3e8e41;
+		}
+
+		form label {
+			display: block;
+			margin: 1rem;
+		}
+
+		form {
+			margin: 1rem;
+		}
+
+	</style>
+	<script>
+		
+
+		window.onload = function() {
+			const directory = './uploads/';
+			const table = document.getElementById('file-table');
+			// alert(fetch(directory));
+			fetch(directory)
+				.then(response => response.text())
+				.then(html => {					
+					const parser = new DOMParser();
+					const doc = parser.parseFromString(html, 'text/html');
+					const filenames = doc.querySelectorAll('a');
+
+					for (const filename of filenames) {
+						if (filename.textContent == '..')
+							continue;
+						const row = table.insertRow();
+						const cell1 = row.insertCell();
+						const cell2 = row.insertCell();
+						const deleteButton = document.createElement('button');
+
+						cell1.innerHTML = filename.textContent;
+						deleteButton.innerHTML = 'Delete';
+
+						
+
+						deleteButton.addEventListener('click', () => {
+								// const params = new URLSearchParams();
+								// params.append('filename', directory + filename.textContent);
+								const data = { filename: '../../pages/upload_test/uploads/' + filename.textContent };
+								fetch('./delete/delete.php', {
+									method: 'DELETE',
+									headers: {
+										'Content-Type': 'application/json'
+									},
+									body: JSON.stringify(data)
+								})
+								.then(response => {
+									if (response.ok) {
+										alert('File deleted successfully');
+										location.reload();
+									} else {
+										alert('Failed to delete file');
+									}
+								})
+								.catch(error => {
+									alert('Error deleting file: ' + error.message);
+								});
+							});
+
+						cell2.appendChild(deleteButton);
+					}
+				})
+				.catch(error => {
+					console.error('Error fetching directory:', error);
+				});
+
+			const form = document.getElementById('file-upload-form');
+			form.addEventListener('submit', (event) => {
+				event.preventDefault();
+				const formData = new FormData(form);
+
+				fetch('./upload/upload.php', {
+					method: 'POST',
+					body: formData
+				})
+					.then(response => {
+						if (response.ok) {
+							alert('File uploaded successfully');
+							location.reload();
+						} else {
+							alert('Failed to upload file');
+						}					
+					})
+					.catch(error => {
+						alert('Error uploading file: ' + error.message);
+					});
+			});
+		};
+	</script>
+</head>
+<body>
+	<h1>Upload Files and Delete</h1>	
+
+	<h2>Upload File</h2>
+	<form id="file-upload-form" method="post" enctype="multipart/form-data">
+		<label for="file">Select a file to upload:</label>
+		<input type="file" id="file" name="file">
+		<button type="submit">Upload</button>
+	</form>
+	<div><br><br><br><br><br></div>
+	<h2>Delete File</h2>
+	<table id="file-table">
+		<thead>
+			<tr>
+				<th>Filename</th>
+				<th>Delete</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+</body>
+</html>

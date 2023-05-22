@@ -1,5 +1,99 @@
 server {
-	listen	*:8080;
-	location / {
+  listen *:8080;
+  location / {
+		index main_page.html;
+		alias ./pages/;
+  }
+
+  location /php_cgitest/php-cgi/ {
+    index index.php;
+    alias ./cgi-bin/php-cgi/;
+  }
+
+  location /py_cgitest/py-cgi/ {
+    index index.py;
+    alias ./cgi-bin/py-cgi/cgi-bin/;
+  }
+
+  location /py_cgitest/ {
+    index login.html;
+		alias ./pages/py_cgitest/;
+  }
+
+  location /upload_test/ {
+    index upload_delete.html;
+    alias ./pages/upload_test/;
+  }
+
+  location /upload_test/upload/ {
+    alias ./cgi-bin/upload/;
+  }
+
+  location /upload_test/delete/ {
+    alias ./cgi-bin/upload/;
+  }
+
+  location /upload_test/uploads/ {
+    autoindex on;
+		alias ./pages/upload_test/uploads/;
+  }
+
+	location /directoryList/ {
+    autoindex on;
+		alias ./pages/directoryList/;
+  }
+
+	location /redirect {
+		redirect 302 https://www.naver.com;
+	}
+}
+
+server {
+  listen *:8081;
+  location / {
+		index main_page.html;
+		alias ./pages/;
+  }
+
+  location /php_cgitest/php-cgi/ {
+    index index.php;
+    alias ./cgi-bin/php-cgi/;
+  }
+
+  location /py_cgitest/py-cgi/ {
+    index index.py;
+    alias ./cgi-bin/py-cgi/cgi-bin/;
+  }
+
+  location /py_cgitest/ {
+    index login.html;
+		alias ./pages/py_cgitest/;
+  }
+
+  location /upload_test/ {
+    index upload_delete.html;
+    alias ./pages/upload_test/;
+  }
+
+  location /upload_test/upload/ {
+    alias ./cgi-bin/upload/;
+  }
+
+  location /upload_test/delete/ {
+    alias ./cgi-bin/upload/;
+  }
+
+  location /upload_test/uploads/ {
+    autoindex on;
+		alias ./pages/upload_test/uploads/;
+  }
+
+	location /directoryList/ {
+    autoindex on;
+		alias ./pages/directoryList/;
+  }
+
+	location /redirect {
+		redirect 302 https://www.naver.com;
 	}
 }

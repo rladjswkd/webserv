@@ -55,7 +55,7 @@ void	RequestLexer::startLineTokenize(Tokens &tokens, std::string &requestMessage
 	char					currentChar = ss.get();
 	Lexeme	lexeme;		
 
-	while (!ss.eof() || currentChar != EOF)
+	while (!ss.eof() || currentChar != (char)EOF)
 	{
 		if (WHITESPACES.find(currentChar) == std::string::npos)
 		{

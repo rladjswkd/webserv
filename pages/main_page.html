@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>My Web Page Tests</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+		h1 {
+			text-align: center;
+			margin: 20px 0;
+		}
+		table {
+			width: 80%;
+			margin: 0 auto 20px auto;
+			border-spacing: 0;
+			border: none;
+			box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+		}
+		th {
+			background-color: #3259a6;
+			color: white;
+			font-size: 1.2em;
+			padding: 10px 8px;
+			text-align: left;
+		}
+		td {
+			padding: 8px;
+			border-top: 1px solid #e5e5e5;
+			font-size: 0.9em;
+		}
+		tr:first-child th {
+			border-top: none;
+		}
+		a {
+			text-decoration: none;
+			color: #3259a6;
+		}
+	</style>
+</head>
+<body>
+	<h1>Webserv Test Page</h1>
+	<table>
+		<tr>            
+			<th colspan="2">Test</th>
+            <th>Link</th>
+			<th>Test Details</th>
+		</tr>
+		<tr>            
+            <td rowspan = "4"> Method </td>
+            <td rowspan = "2"> GET </td>
+			<td><a href="./sample/sample.html"> Get(page) </a></td>
+			<td>GET Method로 page를 확인한다. </td>
+		</tr>
+        <tr>            
+			<td><a href="/directoryList/"> Get(directory) </a></td>
+			<td>GET Method로 디렉토리를 확인한다. config의 option에 따라 directory listing or index page를 확인한다. </td>            
+        </tr>
+		<tr>            
+			<td>POST</td>
+			<td rowspan = "2"><a href="./upload_test/upload_delete.html">POST & DELETE</a></td>
+			<td>POST Method로 upload Test를 한다.</td>
+		</tr>
+		<tr>            
+            <td>DELETE</td>
+			<!-- <td><a href="./delete">DELETE</a></td> -->
+			<td>DELETE Method로 file을 삭제한다.</td>
+		</tr>
+        <tr>      
+            <td colspan = "2" rowspan = "2"> CGI </td>
+			<td><a href="/php_cgitest/php-cgi/"> php-cgi </a></td>
+			<td>php-cgi로 접속한다. 세션이 있다면 바로 접속, 아니다면 login page로 이동을 한다.</td>
+		</tr>
+        <tr>
+			<td><a href="/py_cgitest/py-cgi/"> python-cgi </a></td>
+			<td>python-cgi로 접속한다. 세션이 있다면 바로 접속, 아니다면 login page로 이동을 한다.</td>
+        </tr>
+        <tr>      
+            <td colspan = "2"> Redirection </td>
+			<td><a href="/redirect"> redirection page </a></td>
+			<td>서버에서 리다이렉션을 하게 만든다. 해당 페이지는 리다이렉션이 된다.</td>
+		</tr>
+    </table>
+</body>
+</html>

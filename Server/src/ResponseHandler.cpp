@@ -88,7 +88,7 @@ ResponseHandler::KeepAliveType ResponseHandler::createKeepAlive(const Response &
     std::string connection;
 
     if (isKeepAlive(response))
-        connection = "Connection: Keep-Alive";
+        connection = "Connection: keep-alive";
     else
         connection = "Connection: close";
     connection += CRLF;
@@ -165,6 +165,11 @@ bool ResponseHandler::isContentTypeHeader(std::string &str)
     return (ft_toLower(str).find("content-type: ") == 0);
 }
 
+bool ResponseHandler::isStatusCode(std::string &str)
+{
+    return (ft_toLower(str).find("status: ") == 0);
+}
+
 void ResponseHandler::cgiBodySetting(Response &inputResponse)
 {
     std::string::size_type pos;
@@ -192,6 +197,8 @@ void ResponseHandler::cgiMessageParsing(Response &inputResponse)
       }
       else if(isContentTypeHeader(temp))
         inputResponse.setContentType(temp.substr(14, temp.size()));
+      else if(isStatusCode(temp))
+        inputResponse.setStatusCode(temp.substr(8,3));
       ss.get();
     }
     cgiBodySetting(inputResponse);
