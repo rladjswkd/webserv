@@ -179,22 +179,21 @@ void Server::disconnect(const FileDescriptor &epoll, const FileDescriptor &clien
 
 void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target)
 {
-	receiveData(epoll, client, target);
+	receiveData(epoll, client, target, true);
 	if (target.isComplete())
 		return (processRequest(epoll, client, target));
 }
 
 void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target)
 {
-	receiveData(epoll, pipe, target);
+	receiveData(epoll, pipe, target, false);
+	if (target.isDisconnected())
+		disconnectPipe(epoll, pipe);
 	if (target.isComplete())
 	{
-		controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
-		cgiClients.erase(pipe);
-		close(pipe);
 		ResponseHandler::cgiMessageParsing(const_cast<Response &>(target.getResponseObject()));
 		target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject()));
-		while (waitpid(0, 0, WNOHANG) == 0);
+		disconnectPipe(epoll, pipe);
 	}
 }
 
@@ -223,14 +222,16 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 		handleConnection(epoll, client);
 }
 
-void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
+void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target, bool isClient)
 {
 	char	buffer[BUFFER_SIZE] = {0};	// C99
 	ssize_t	received = read(fd, buffer, BUFFER_SIZE - 1);
 
 	if (received < 0)
 		return (disconnect(epoll, fd, RECV_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
-	target.appendMessage(std::string (buffer, received));
+	if (isClient && !received)
+		return (disconnect(epoll, fd, DISCONNECTED_MESSAGE));
+	target.appendMessage(std::string(buffer, received));
 }
 
 void Server::handleConnection(const FileDescriptor &epoll, const FileDescriptor &client)
@@ -249,6 +250,14 @@ void Server::destructClients()
 		it->second.reset();
 		close(it->first);
 	}
+}
+
+void Server::disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &pipe)
+{
+	controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
+	cgiClients.erase(pipe);
+	close(pipe);
+	while (waitpid(0, 0, WNOHANG) == 0);
 }
 
 template <typename MapType>

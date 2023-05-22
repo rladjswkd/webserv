@@ -4,6 +4,9 @@
 const RequestParser::Space RequestParser::SPACE = SP_LITERAL;
 const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
 const RequestParser::StatusCode RequestParser::CLIENT_ERROR = "400";
+const RequestParser::StatusCode RequestParser::NOT_IMPLEMENTED = "501";
+const RequestParser::StatusCode RequestParser::HTTP_VERSION_NOT_SUPPORTED = "505";
+
 //util__
 std::string RequestParser::ft_toLower(std::string str)
 {
@@ -110,7 +113,7 @@ void RequestParser::startLineValidity(Tokens &tokens, Request &request)
   Token httpVersion = *(tokens.begin());
   tokens.pop_front();
   if (!isMethod(method.second))
-    throwError("501", "startline method syntax error!");
+    throwError(NOT_IMPLEMENTED, "startline method syntax error!");
   if (!isSpace(sp1.second) || !isSpace(sp2.second))
     throwError(CLIENT_ERROR, "startline SP syntax error!");
   if (isQueryString(uri.second))
@@ -118,7 +121,7 @@ void RequestParser::startLineValidity(Tokens &tokens, Request &request)
   else
     request.setUriPath(uri.second);
   if (!isHttpVersion(httpVersion.second))
-    throwError("505", "startline http version syntax error!");
+    throwError(HTTP_VERSION_NOT_SUPPORTED, "startline http version syntax error!");
   
   request.setMethod(settingMethod(method.second));
   request.setHttpVersion(httpVersion.second);
