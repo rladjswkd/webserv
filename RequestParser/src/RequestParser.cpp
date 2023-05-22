@@ -6,6 +6,7 @@ const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
 const RequestParser::StatusCode RequestParser::CLIENT_ERROR = "400";
 const RequestParser::StatusCode RequestParser::NOT_IMPLEMENTED = "501";
 const RequestParser::StatusCode RequestParser::HTTP_VERSION_NOT_SUPPORTED = "505";
+
 //util__
 std::string RequestParser::ft_toLower(std::string str)
 {
