@@ -3,7 +3,7 @@
 
 const RequestParser::Space RequestParser::SPACE = SP_LITERAL;
 const RequestParser::HttpVersion RequestParser::HTTPVERSION = HTTP_VERSION;
-const RequestParser::StatusCode RequestParser::CLIENT_ERROR = "400";  
+const RequestParser::StatusCode RequestParser::CLIENT_ERROR = "400";
 //util__
 std::string RequestParser::ft_toLower(std::string str)
 {
@@ -110,7 +110,7 @@ void RequestParser::startLineValidity(Tokens &tokens, Request &request)
   Token httpVersion = *(tokens.begin());
   tokens.pop_front();
   if (!isMethod(method.second))
-    throwError(CLIENT_ERROR, "startline method syntax error!");
+    throwError("501", "startline method syntax error!");
   if (!isSpace(sp1.second) || !isSpace(sp2.second))
     throwError(CLIENT_ERROR, "startline SP syntax error!");
   if (isQueryString(uri.second))
