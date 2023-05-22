@@ -65,11 +65,12 @@ private:
 	void			receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target);
 	void			processRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target);
 	void			sendData(const FileDescriptor &epoll, const FileDescriptor &client);
-	void			receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
+	void			receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target, bool isClient);
 	void			handleConnection(const FileDescriptor &epoll, const FileDescriptor &client);
 	void			destructClients();
 	template <typename MapType>
 	void			closeFileDescriptor(MapType &mapObject, const FileDescriptor &epoll);
+	void			disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &client);
 
 public:
 	Server(const Config config);
