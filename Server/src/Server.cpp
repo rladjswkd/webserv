@@ -146,6 +146,8 @@ void Server::handleIOEvent(const FileDescriptor &epoll, const epoll_event &event
 		return (receiveRequest(epoll, eventFd, clients[eventFd]));
 	if (eventType & EPOLLOUT && clients[eventFd].isComplete())
 		return (sendData(epoll, eventFd));
+	if (eventType & EPOLLOUT && clients[eventFd].isChildProcessError())
+		return (disconnect(epoll, eventFd, CHILD_PROCESS_EXCEPTION_MESSAGE));
 }
 
 void Server::acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &server)
@@ -254,10 +256,14 @@ void Server::destructClients()
 
 void Server::disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &pipe)
 {
+	int	status = 0;
+
 	controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
 	cgiClients.erase(pipe);
 	close(pipe);
-	while (waitpid(0, 0, WNOHANG) == 0);
+	while (waitpid(0, &status, WNOHANG) == 0);
+	if (WEXITSTATUS(status) == -1)
+		cgiClients[pipe]->setChildProcessErrorState();
 }
 
 template <typename MapType>
