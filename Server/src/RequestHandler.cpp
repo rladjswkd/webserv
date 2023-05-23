@@ -1,4 +1,6 @@
 #include "RequestHandler.hpp"
+#include <csignal>
+#include <sys/wait.h>
 
 std::string RequestHandler::readFileToString(const Path &filePath){
     std::ifstream   file(filePath.c_str());
@@ -206,12 +208,17 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
         std::cerr << "FORK ERROR" << std::endl; // FIXME except
     else if (pid == 0)
         executeScript(pipefd, requestPath, request);
+    fd = pipefd[R_PIPE_READ];
     if (write(pipefd[W_PIPE_WRITE], requestBody.c_str(), requestBody.length()) == -1)
-        std::cerr << "PIPE WRITE ERROR" << std::endl; // 
+    {
+        fd = -1;
+        close(pipefd[R_PIPE_READ]);
+        kill(pid, SIGKILL);
+        while (waitpid(0, 0, WNOHANG) == 0);
+    } 
     close(pipefd[W_PIPE_WRITE]);
     close(pipefd[W_PIPE_READ]);
     close(pipefd[R_PIPE_WRITE]);
-    fd = pipefd[R_PIPE_READ];
     response.setStatusCode("200");
     return response;
 }

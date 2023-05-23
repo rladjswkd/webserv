@@ -206,6 +206,8 @@ void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &c
 	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[client]), config, const_cast<Request &>(target.getRequestObject())));
 	if (cgiPipe == 0)
 		return (target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject())));
+	if (cgiPipe == -1)
+		return (disconnect(epoll, client, PIPE_WRITE_EXCEPTION_MESSAGE));
 	fcntl(cgiPipe, F_SETFL, O_NONBLOCK); // Without this, cgiPipe must be blocking.
 	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
 	cgiClients[cgiPipe] = &target;

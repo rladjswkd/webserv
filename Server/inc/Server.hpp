@@ -25,7 +25,7 @@
 # define ACCEPT_EXCEPTION_MESSAGE			"accept() ERROR!"
 # define EPOLL_WAIT_EXCEPTION_MESSAGE		"epoll_wait() ERROR!"
 # define CHILD_PROCESS_EXCEPTION_MESSAGE	"child process ERROR!"
-
+# define PIPE_WRITE_EXCEPTION_MESSAGE		"pipe write ERROR!"
 class Server
 {
 public:
