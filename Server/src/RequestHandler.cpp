@@ -251,7 +251,7 @@ Response    RequestHandler::processLocation(int &fd, const ConfigLocation &locat
         return responseError("403", location.getErrorPage());
     path = determinePath(location, route, request);
     if (stat(path.c_str(), &sb) == -1)
-        return (responseError("404"));
+        return (responseError("404", location.getErrorPage()));
     return (processPath(fd, location, path, request));
 }
 
