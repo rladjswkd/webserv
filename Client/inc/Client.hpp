@@ -15,6 +15,7 @@
 # define STATE_RESPONSE_CGI					8
 # define STATE_COMPLETE						16
 # define STATE_DISCONNECTED					32
+# define STATE_CHILD_PROCESS_ERROR			64
 
 # define CONTENT_LENGTH_EXCEPTION_MESSAGE	"TOO LONG CLIENT MESSAGE BODY!"
 
@@ -70,8 +71,10 @@ public:
 	
 	void				setCGIState();
 	void				setDisconnectedState();
+	void				setChildProcessErrorState();
 	bool				isComplete();
 	bool				isDisconnected();
+	bool				isChildProcessError();
 
 	bool				isKeepAlive();
 	void				reset();

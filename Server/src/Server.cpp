@@ -76,12 +76,6 @@ addrinfo Server::createaddrHints()
 	return (hints);
 }
 
-void Server::throwException(addrinfo *info)
-{
-	freeaddrinfo(info);
-	throw (std::runtime_error(std::strerror(errno)));
-}
-
 const char	*Server::extractNumericHost(const Host &host)
 {
     if (host == LOCALHOST_STR)
@@ -146,6 +140,8 @@ void Server::handleIOEvent(const FileDescriptor &epoll, const epoll_event &event
 		return (receiveRequest(epoll, eventFd, clients[eventFd]));
 	if (eventType & EPOLLOUT && clients[eventFd].isComplete())
 		return (sendData(epoll, eventFd));
+	if (eventType & EPOLLOUT && clients[eventFd].isChildProcessError())
+		return (disconnect(epoll, eventFd, CHILD_PROCESS_EXCEPTION_MESSAGE));
 }
 
 void Server::acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &server)
@@ -204,6 +200,8 @@ void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &c
 	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[client]), config, const_cast<Request &>(target.getRequestObject())));
 	if (cgiPipe == 0)
 		return (target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject())));
+	if (cgiPipe == -1)
+		return (disconnect(epoll, client, PIPE_WRITE_EXCEPTION_MESSAGE));
 	fcntl(cgiPipe, F_SETFL, O_NONBLOCK); // Without this, cgiPipe must be blocking.
 	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
 	cgiClients[cgiPipe] = &target;
@@ -254,10 +252,14 @@ void Server::destructClients()
 
 void Server::disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &pipe)
 {
+	int	status = 0;
+
 	controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
 	cgiClients.erase(pipe);
 	close(pipe);
-	while (waitpid(0, 0, WNOHANG) == 0);
+	while (waitpid(0, &status, WNOHANG) == 0);
+	if (WEXITSTATUS(status) == -1)
+		cgiClients[pipe]->setChildProcessErrorState();
 }
 
 template <typename MapType>

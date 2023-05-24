@@ -10,21 +10,22 @@
 # include "Config.hpp"
 # include "Client.hpp"
 
-# define LOCALHOST_STR					"localhost"
-# define LOCALHOST_NUMERIC_STR			"127.0.0.1"
-# define ASTERISK_STR					"*"
-# define ASTERISK_NUMERIC_STR			NULL
-# define MAX_EVENT_COUNT				10
-# define BUFFER_SIZE					8000
-# define CHAR_NULL						'\0'
-# define RECV_EXCEPTION_MESSAGE			"recv() ERROR!"
-# define READ_EXCEPTION_MESSAGE			"read() ERROR!"
-# define SEND_EXCEPTION_MESSAGE			"send() ERROR!"
-# define DISCONNECTED_MESSAGE			"CLIENT DISCONNECTED!"
-# define DISCONNECTING_MESSAGE			"SERVER DISCONNECTED!"
-# define ACCEPT_EXCEPTION_MESSAGE		"accept() ERROR!"
-# define EPOLL_WAIT_EXCEPTION_MESSAGE	"epoll_wait() ERROR!"
-
+# define LOCALHOST_STR						"localhost"
+# define LOCALHOST_NUMERIC_STR				"127.0.0.1"
+# define ASTERISK_STR						"*"
+# define ASTERISK_NUMERIC_STR				NULL
+# define MAX_EVENT_COUNT					10
+# define BUFFER_SIZE						8000
+# define CHAR_NULL							'\0'
+# define RECV_EXCEPTION_MESSAGE				"recv() ERROR!"
+# define READ_EXCEPTION_MESSAGE				"read() ERROR!"
+# define SEND_EXCEPTION_MESSAGE				"send() ERROR!"
+# define DISCONNECTED_MESSAGE				"CLIENT DISCONNECTED!"
+# define DISCONNECTING_MESSAGE				"SERVER DISCONNECTED!"
+# define ACCEPT_EXCEPTION_MESSAGE			"accept() ERROR!"
+# define EPOLL_WAIT_EXCEPTION_MESSAGE		"epoll_wait() ERROR!"
+# define CHILD_PROCESS_EXCEPTION_MESSAGE	"child process ERROR!"
+# define PIPE_WRITE_EXCEPTION_MESSAGE		"pipe write ERROR!"
 class Server
 {
 public:
@@ -51,7 +52,6 @@ private:
 	void			doListen(const FileDescriptor socket, addrinfo *result);
 	FileDescriptor	createSocket();
 	addrinfo		createaddrHints();
-	void			throwException(addrinfo *info);
 	const char		*extractNumericHost(const Host &host);
 	void			initServerSockets();
 	FileDescriptor	createEpollObject();
