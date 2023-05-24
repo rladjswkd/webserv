@@ -2,6 +2,7 @@
 #include <csignal>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <cstring>
 
 std::string RequestHandler::readFileToString(const Path &filePath){
     std::ifstream   file(filePath.c_str());
