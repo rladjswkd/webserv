@@ -409,7 +409,7 @@ void RequestParser::chunkedProcess(Request &request)
   request.setBody(bodyConverted);
 }
 
-void RequestParser::multipartFormDataIdProcess(Request &request) //TODO: reduce local variables
+void RequestParser::multipartFormDataIdProcess(Request &request)
 {
   std::string bodyConverted, id, contentDisposition, contentType, emptyArea, bodyPiece, multipartFormDataId;
   BodyType  body = request.getBody();
@@ -445,8 +445,6 @@ void RequestParser::multipartFormDataIdProcess(Request &request) //TODO: reduce 
 void RequestParser::bodyLineValidity(const Tokens &tokens, Request &request)
 {
   inputBodyData(tokens, request);
-  // if (request.getMultipartFormDataId().length() > 0)
-  //   multipartFormDataIdProcess(request);
   if (request.getChunked())
     chunkedProcess(request);
   if (request.getHeaderFields().count("content-length") == 0)
@@ -470,26 +468,6 @@ void RequestParser::previousErrorCheck(const Tokens &tokens)
   if ((*tokens.begin()).first == ERROR)
     throwError((*tokens.begin()).second.c_str(), "previous(httpLexer) syntax error!");
 }
-
-// Request RequestParser::httpParser(Tokens &tokens)//TODO: delete if this function is not used
-// {
-//   Request requestNew;
-
-//   request = requestNew;
-//   try
-//   {
-//     previousErrorCheck(tokens);
-//     startLineValidity(tokens, request);
-//     headerLineValidity(tokens);
-//     bodyLineValidity(tokens, request);
-//   }
-//   catch(const char *code)
-//   {
-//     errorHandling(code, request);
-//   }
-
-//   return request;
-// }
 
 void RequestParser::startLineHeaderLineParsing(Tokens &tokens, Request &request)
 {

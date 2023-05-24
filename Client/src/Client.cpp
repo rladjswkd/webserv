@@ -170,7 +170,6 @@ void Client::reset()
 {
 	state = STATE_REQUEST_FIELD_LINE;
 	message.clear();
-	// response = 0;
 	requestObj = Request();
 	responseObj = Response();
 }

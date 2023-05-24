@@ -28,8 +28,6 @@ class RequestLexer
 		static const Delimiter	WHITESPACES;
 		static const StatusCode	CLIENT_ERROR;
 		static const char		*CRLF;
-	// private:
-		// static std::string	requestMessage;
 
 	private:
 		static void				startLineTokenize(Tokens &tokens, std::string &requestMessage);
@@ -46,7 +44,6 @@ class RequestLexer
 		static std::string ft_toLower(std::string str);
 		
 	public:
-		// static Tokens httpTokenize(std::string inputRequestMessage);
 		static Tokens startLineHeaderLineTokenize(std::string inputRequestMessage);
 		static Tokens bodyLineTokenize(const std::string &inputRequestMessage);
 };

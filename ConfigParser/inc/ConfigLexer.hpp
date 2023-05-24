@@ -27,9 +27,6 @@ private:	// constants
 	static const Delimiter	WHITESPACES;
 	static const Delimiter	BRACKET_SEMICOLON;
 
-// private:
-	// static ConfigFile	configFile;
-
 private:
 	ConfigLexer();
 

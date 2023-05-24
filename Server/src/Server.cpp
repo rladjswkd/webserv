@@ -215,7 +215,7 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 	ssize_t		sent = send(client, response, target.getResponseLengthToSend(), MSG_DONTWAIT);
 
 	if (sent < 0)
-		return (disconnect(epoll, client, SEND_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
+		return (disconnect(epoll, client, SEND_EXCEPTION_MESSAGE));
 	if (target.updateMessageBuffer(sent) == 0)
 		handleConnection(epoll, client);
 }
@@ -226,7 +226,7 @@ void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, 
 	ssize_t	received = read(fd, buffer, BUFFER_SIZE - 1);
 
 	if (received < 0)
-		return (disconnect(epoll, fd, RECV_EXCEPTION_MESSAGE)); //TODO: 5xx server error?
+		return (disconnect(epoll, fd, RECV_EXCEPTION_MESSAGE));
 	if (isClient && !received)
 		return (disconnect(epoll, fd, DISCONNECTED_MESSAGE));
 	target.appendMessage(std::string(buffer, received));

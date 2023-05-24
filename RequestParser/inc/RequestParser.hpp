@@ -17,7 +17,6 @@ class RequestParser
   typedef RequestLexer::Tokens Tokens;
   typedef RequestLexer::Token Token;
   typedef RequestLexer::SizeType SizeType;
-  // typedef RequestLexer::StatusCode  StatusCode;
   typedef std::string StatusCode;
   typedef std::string Space, HttpVersion, FieldName, FieldValue, Port, BodyType;
   typedef int HeaderType;
@@ -70,7 +69,6 @@ class RequestParser
 		static const StatusCode HTTP_VERSION_NOT_SUPPORTED;
 
   public:
-    // static Request httpParser(Tokens &tokens);//TODO: remove
     static void startLineHeaderLineParsing(Tokens &tokens, Request &request);
     static void bodyLineParsing(const Tokens &tokens, Request &request);
 };

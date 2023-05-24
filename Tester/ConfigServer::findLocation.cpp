@@ -8,8 +8,6 @@
 
 #define DEFAULT_CONFIG_FILE "./Files/DefaultConfig"
 
-// main.cpp 대신 이 파일의 이름을 main.cpp로 바꿔 make하면 테스트 결과 확인 가능
-// Java의 Junit같은 유닛테스트를 위한 프레임워크나 라이브러리가 있는지 확인해보자.
 int main(int argc, char **argv)
 {
     std::string filePath = DEFAULT_CONFIG_FILE;
