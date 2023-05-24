@@ -334,9 +334,9 @@ Response RequestHandler::processPath(int &fd, const ConfigLocation location, con
 
 Response RequestHandler::processDirectory(int & fd, const ConfigLocation location, const Path requestPath, const Request & request)
 {
-    if (access(requestPath.c_str(), X_OK | R_OK) == 0)
+    if (access(requestPath.c_str(), R_OK) == 0)
         return (responseIndex(fd, location, requestPath, request));
-    
+    return (responseError("403", location.getErrorPage()));
 }
 
 Response RequestHandler::processFile(int & fd, const ConfigLocation location, const Path requestPath, const Request & request)
