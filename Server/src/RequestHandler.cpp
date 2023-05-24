@@ -145,8 +145,8 @@ void    RequestHandler::setAdditionalEnv(Path requestPath, const Request &reques
     ss << request.getContentLength();
     setenv("CONTENT_LENGTH", ss.str().c_str(), 1);
     setenv("HTTP_CONTENT_LENGTH", ss.str().c_str(), 1);
-    setenv("CONTENT_TYPE", request.getContentType().c_str(), 1); // TODO upload file
-    setenv("HTTP_CONTENT_TYPE", request.getContentType().c_str(), 1); // TODO upload file
+    setenv("CONTENT_TYPE", request.getContentType().c_str(), 1);
+    setenv("HTTP_CONTENT_TYPE", request.getContentType().c_str(), 1);
     setenv("QUERY_STRING", request.getQueryString().c_str(), 1);
     setenv("REQUEST_METHOD", request.getMethod().c_str(), 1);
     setenv("SCRIPT_FILENAME", requestPath.c_str(), 1);
@@ -164,8 +164,10 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
     char *chr[1];
     chr[0] = NULL;
     setAdditionalEnv(requestPath, request);
-    dup2(*(pipefd + W_PIPE_READ), STDIN_FILENO); // FIXME throw except
-    dup2(*(pipefd + R_PIPE_WRITE), STDOUT_FILENO);
+    if (dup2(*(pipefd + W_PIPE_READ), STDIN_FILENO) < 0)
+        exit(-1);
+    if (dup2(*(pipefd + R_PIPE_WRITE), STDOUT_FILENO) < 0)
+        exit(-1);
     close(*(pipefd + W_PIPE_READ));
     close(*(pipefd + W_PIPE_WRITE));
     close(*(pipefd + R_PIPE_READ));
@@ -175,8 +177,6 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
 }
 
 Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request){
-    // TODO extension check
-    // FIXME exit or exception?
     Response    response;
     pid_t       pid;
     int         pipefd[4];
@@ -185,10 +185,10 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
     if (access(requestPath.c_str(), F_OK) != 0)
         return responseError("403", location.getErrorPage());
     if (pipe(pipefd) < 0 || pipe(pipefd + 2) < 0)
-        std::cerr << "PIPE ERROR" << std::endl; // FIXME exit or exception? or 5XX responseError => pipe ERROR about FD.
+        throw (std::runtime_error(std::strerror(errno)));
     pid = fork();
     if (pid < 0)
-        std::cerr << "FORK ERROR" << std::endl; // FIXME except
+        throw (std::runtime_error(std::strerror(errno)));
     else if (pid == 0)
         executeScript(pipefd, requestPath, request);
     fd = pipefd[R_PIPE_READ];
@@ -198,7 +198,7 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
         close(pipefd[R_PIPE_READ]);
         kill(pid, SIGKILL);
         while (waitpid(0, 0, WNOHANG) == 0);
-    } 
+    }
     close(pipefd[W_PIPE_WRITE]);
     close(pipefd[W_PIPE_READ]);
     close(pipefd[R_PIPE_WRITE]);
