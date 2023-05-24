@@ -52,7 +52,6 @@ private:
 	void			doListen(const FileDescriptor socket, addrinfo *result);
 	FileDescriptor	createSocket();
 	addrinfo		createaddrHints();
-	void			throwException(addrinfo *info);
 	const char		*extractNumericHost(const Host &host);
 	void			initServerSockets();
 	FileDescriptor	createEpollObject();

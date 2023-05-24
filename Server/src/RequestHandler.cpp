@@ -1,6 +1,7 @@
 #include "RequestHandler.hpp"
 #include <csignal>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 std::string RequestHandler::readFileToString(const Path &filePath){
     std::ifstream   file(filePath.c_str());
@@ -68,24 +69,6 @@ Response    RequestHandler::responseAutoIndex(const ConfigLocation location, con
     response.setBody(createDirectoryListing(requestPath));
     response.setKeepAlive(request.getKeepAlive());
     return response;
-}
-
-Response    RequestHandler::responseIndex(int &fd, const ConfigLocation location, const Path requestPath, const Request &request){
-    Path temp;
-    std::vector<std::string>::const_iterator index;
-    const std::vector<std::string> &indexList = location.getIndex();
-
-    for(index = indexList.begin(); index != indexList.end(); ++index){
-        temp = requestPath + *index;
-        if (access(temp.c_str(), F_OK) == 0){
-            if (isCGIPath(temp))
-                return responseCGI(fd, location, temp, request);
-            return responseFile(location, temp, request);
-        }
-    }
-    if (location.isAutoIndexOn())
-        return responseAutoIndex(location, requestPath, request);
-    return responseError("404", location.getErrorPage());
 }
 
 bool    RequestHandler::isAllowed(const ArgumentList  &limitExcept, const std::string method){
@@ -200,7 +183,7 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
     std::string requestBody = request.getBody();
 
     if (access(requestPath.c_str(), F_OK) != 0)
-        return responseError("404", location.getErrorPage());
+        return responseError("403", location.getErrorPage());
     if (pipe(pipefd) < 0 || pipe(pipefd + 2) < 0)
         std::cerr << "PIPE ERROR" << std::endl; // FIXME exit or exception? or 5XX responseError => pipe ERROR about FD.
     pid = fork();
@@ -224,7 +207,11 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
 }
 
 bool    RequestHandler::isDirectoryFile(const Path requestPath){
-    return (opendir(requestPath.c_str()) != NULL);
+    DIR *dir = opendir(requestPath.c_str());
+    if (dir == NULL)
+        return (false);
+    closedir(dir);
+    return (true);
 }
 
 std::string RequestHandler::getFileExtension(const Path path){
@@ -237,8 +224,6 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
     Response    response;
     MIMEType::MIMEMap::const_iterator it;
 
-    if (access(requestPath.c_str(), F_OK) != 0)
-        return responseError("404", location.getErrorPage());
     if (request.getMethod() != "GET")
         return responseError("405", location.getErrorPage());
     if (isDirectoryFile(requestPath))
@@ -257,21 +242,17 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
 }
 
 Response    RequestHandler::processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request){
-    Path requestPath;
+    Path        path;
+    struct stat sb;
 
     if (isRequestBodyTooLarge(location.getClientMaxBodySize(), request.getContentLength()))
         return responseError("413", location.getErrorPage());
     if (!isAllowed(location.getLimitExcept(), request.getMethod()))
         return responseError("403", location.getErrorPage());
-    if (location.hasAlias())
-        requestPath = location.getAlias() + request.getUriPath().erase(0, route.length());
-    else
-        requestPath = ROOT_PATH + request.getUriPath();
-    if (isDirectoryPath(requestPath))
-        return responseIndex(fd, location, requestPath, request);
-    if (isCGIPath(requestPath))
-        return responseCGI(fd, location, requestPath, request);
-    return responseFile(location, requestPath, request);
+    path = determinePath(location, route, request);
+    if (stat(path.c_str(), &sb) == -1)
+        return (responseError("404"));
+    return (processPath(fd, location, path, request));
 }
 
 void   RequestHandler::tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath){
@@ -318,6 +299,53 @@ bool    RequestHandler::resolveRerativePath(Request &request){
     request.setUriPath(uriPath);
     return true;
 }
+
+RequestHandler::Path RequestHandler::determinePath(const ConfigLocation &location, Route route, const Request &request)
+{
+    if (location.hasAlias())
+        return (location.getAlias() + request.getUriPath().erase(0, route.length()));
+    return (ROOT_PATH + request.getUriPath());
+}
+
+Response    RequestHandler::responseIndex(int &fd, const ConfigLocation location, const Path requestPath, const Request &request){
+    Path temp;
+    std::vector<std::string>::const_iterator index;
+    const std::vector<std::string> &indexList = location.getIndex();
+
+    for(index = indexList.begin(); index != indexList.end(); ++index){
+        temp = requestPath + *index;
+        if (access(temp.c_str(), F_OK) == 0){
+            if (isCGIPath(temp))
+                return responseCGI(fd, location, temp, request);
+            return responseFile(location, temp, request);
+        }
+    }
+    if (location.isAutoIndexOn())
+        return responseAutoIndex(location, requestPath, request);
+    return responseError("403", location.getErrorPage());
+}
+
+Response RequestHandler::processPath(int &fd, const ConfigLocation location, const Path requestPath, const Request &request)
+{
+    if (isDirectoryPath(requestPath))
+        return (processDirectory(fd, location, requestPath, request));
+    return (processFile(fd, location, requestPath, request));
+}
+
+Response RequestHandler::processDirectory(int & fd, const ConfigLocation location, const Path requestPath, const Request & request)
+{
+    if (access(requestPath.c_str(), X_OK | R_OK) == 0)
+        return (responseIndex(fd, location, requestPath, request));
+    
+}
+
+Response RequestHandler::processFile(int & fd, const ConfigLocation location, const Path requestPath, const Request & request)
+{
+    if (isCGIPath(requestPath))
+        return (responseCGI(fd, location, requestPath, request));
+    return (responseFile(location, requestPath, request));
+}
+
 
 Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request){
     const ConfigServer              &server = config.getServer(socketaddr, request.getHost());

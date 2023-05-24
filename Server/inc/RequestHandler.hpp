@@ -41,8 +41,7 @@ class RequestHandler
         RequestHandler();
         static std::string createDirectoryListing(PathType path);
         static std::string getDirectoryList(PathType path);
-        static Response processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request);     
-        static std::string getFile(PathType path);
+        static Response processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request);
         static std::string readFileToString(const Path &filePath);
         static Response responseError(std::string statusCode, ErrorPageMap errorPage);
         static Response responseRedirect(std::vector<std::string> redirect);
@@ -61,6 +60,13 @@ class RequestHandler
         static bool     isDirectoryFile(const Path requestPath);
         static void     tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
         static bool     resolveRerativePath(Request &request);
+        static Path     determinePath(const ConfigLocation &location, Route route, const Request &request);
+        static Response processPath(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response processDirectory(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response processFile(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
+
+
+
     public:
         static  Response    responseError(std::string statusCode);
         static  Response    processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request);

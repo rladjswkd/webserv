@@ -76,12 +76,6 @@ addrinfo Server::createaddrHints()
 	return (hints);
 }
 
-void Server::throwException(addrinfo *info)
-{
-	freeaddrinfo(info);
-	throw (std::runtime_error(std::strerror(errno)));
-}
-
 const char	*Server::extractNumericHost(const Host &host)
 {
     if (host == LOCALHOST_STR)
