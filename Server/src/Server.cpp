@@ -183,6 +183,7 @@ void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &c
 void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target)
 {
 	receiveCGIData(epoll, pipe, target);
+	// CGI 응답 대기 중 클라이언트ㄹ가 소켓 연결을 끊어 클라이언트 연결 정보가 사라졌지만, pipe 등 CGI 관련 정보는 살아있어 이벤트가 발생한 경우
 	if (target.isDisconnected())
 		disconnectPipe(epoll, pipe);
 	if (target.isComplete())
