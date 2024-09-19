@@ -274,7 +274,7 @@ void   RequestHandler::tokenizeUriPath(std::vector<std::string> &tokens, Path ur
     tokens.push_back(token);
 }
 
-bool    RequestHandler::resolveRerativePath(Request &request){
+bool    RequestHandler::resolveRelativePath(Request &request){
     std::vector<std::string>                    tokens;
     std::vector<std::string>                    absoluteTokens;
     Path                                        uriPath = request.getUriPath();
@@ -358,7 +358,7 @@ Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr
         return responseError(errorCode);
     if (server.hasRedirect())
         return responseRedirect(server.getRedirect());
-    if (!resolveRerativePath(request))
+    if (!resolveRelativePath(request))
         return responseError("400", server.getErrorPage());
     locationIt = server.findLocation(request.getUriPath());
     if (locationIt == server.end())

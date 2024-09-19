@@ -59,7 +59,7 @@ class RequestHandler
         static Response responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
         static bool     isDirectoryFile(const Path requestPath);
         static void     tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
-        static bool     resolveRerativePath(Request &request);
+        static bool     resolveRelativePath(Request &request);
         static Path     determinePath(const ConfigLocation &location, Route route, const Request &request);
         static Response processPath(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
         static Response processDirectory(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
