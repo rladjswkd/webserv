@@ -166,15 +166,15 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
     chr[0] = NULL;
     setAdditionalEnv(requestPath, request);
     if (dup2(*(pipefd + W_PIPE_READ), STDIN_FILENO) < 0)
-        exit(-1);
+        exit(1);
     if (dup2(*(pipefd + R_PIPE_WRITE), STDOUT_FILENO) < 0)
-        exit(-1);
+        exit(1);
     close(*(pipefd + W_PIPE_READ));
     close(*(pipefd + W_PIPE_WRITE));
     close(*(pipefd + R_PIPE_READ));
     close(*(pipefd + R_PIPE_WRITE));
     execve(requestPath.c_str(), chr, environ);
-    exit(-1);
+    exit(1);
 }
 
 Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request){

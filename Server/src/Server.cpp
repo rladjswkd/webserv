@@ -258,7 +258,7 @@ void Server::disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &p
 	cgiClients.erase(pipe);
 	close(pipe);
 	while (waitpid(0, &status, WNOHANG) == 0);
-	if (WEXITSTATUS(status) == -1)
+	if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
 		cgiClients[pipe]->setChildProcessErrorState();
 }
 
