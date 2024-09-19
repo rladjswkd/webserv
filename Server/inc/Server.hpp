@@ -24,7 +24,7 @@
 # define DISCONNECTING_MESSAGE				"SERVER DISCONNECTED!"
 # define ACCEPT_EXCEPTION_MESSAGE			"accept() ERROR!"
 # define EPOLL_WAIT_EXCEPTION_MESSAGE		"epoll_wait() ERROR!"
-# define CHILD_PROCESS_EXCEPTION_MESSAGE	"child process ERROR!"
+# define CGI_EXCEPTION_MESSAGE				"CGI ERROR!"
 # define PIPE_WRITE_EXCEPTION_MESSAGE		"pipe write ERROR!"
 class Server
 {
@@ -65,12 +65,13 @@ private:
 	void			receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target);
 	void			processRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target);
 	void			sendData(const FileDescriptor &epoll, const FileDescriptor &client);
-	void			receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target, bool isClient);
+	void			receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
 	void			handleConnection(const FileDescriptor &epoll, const FileDescriptor &client);
 	void			destructClients();
 	template <typename MapType>
 	void			closeFileDescriptor(MapType &mapObject, const FileDescriptor &epoll);
 	void			disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &client);
+	void			receiveCGIData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target);
 
 public:
 	Server(const Config config);

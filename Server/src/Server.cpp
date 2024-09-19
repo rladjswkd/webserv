@@ -140,8 +140,8 @@ void Server::handleIOEvent(const FileDescriptor &epoll, const epoll_event &event
 		return (receiveRequest(epoll, eventFd, clients[eventFd]));
 	if (eventType & EPOLLOUT && clients[eventFd].isComplete())
 		return (sendData(epoll, eventFd));
-	if (eventType & EPOLLOUT && clients[eventFd].isChildProcessError())
-		return (disconnect(epoll, eventFd, CHILD_PROCESS_EXCEPTION_MESSAGE));
+	if (eventType & EPOLLOUT && clients[eventFd].isCGIError())
+		return (disconnect(epoll, eventFd, CGI_EXCEPTION_MESSAGE));
 }
 
 void Server::acceptNewClient(const FileDescriptor &epoll, const FileDescriptor &server)
@@ -175,14 +175,14 @@ void Server::disconnect(const FileDescriptor &epoll, const FileDescriptor &clien
 
 void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target)
 {
-	receiveData(epoll, client, target, true);
+	receiveData(epoll, client, target);
 	if (target.isComplete())
 		return (processRequest(epoll, client, target));
 }
 
 void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target)
 {
-	receiveData(epoll, pipe, target, false);
+	receiveCGIData(epoll, pipe, target);
 	if (target.isDisconnected())
 		disconnectPipe(epoll, pipe);
 	if (target.isComplete())
@@ -220,15 +220,35 @@ void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
 		handleConnection(epoll, client);
 }
 
-void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target, bool isClient)
+void Server::receiveData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
 {
 	char	buffer[BUFFER_SIZE] = {0};	// C99
 	ssize_t	received = read(fd, buffer, BUFFER_SIZE - 1);
 
 	if (received < 0)
 		return (disconnect(epoll, fd, RECV_EXCEPTION_MESSAGE));
-	if (isClient && !received)
+	if (!received)
 		return (disconnect(epoll, fd, DISCONNECTED_MESSAGE));
+	target.appendMessage(std::string(buffer, received));
+}
+
+void Server::receiveCGIData(const FileDescriptor &epoll, const FileDescriptor &fd, Client &target)
+{
+	char	buffer[BUFFER_SIZE] = {0};
+	ssize_t	received = read(fd, buffer, BUFFER_SIZE - 1);
+
+	// 오류 발생 시 파이프 해제 및 클라이언트 해제 필요.
+	// 클라이언트의 파일 디스크립터 정보가 없으므로 이 코드에선 클라이언트를 해제할 수 없다.
+	// disconnectPipe를 호출하고 target에 대해 setCGIErrorState()를 호출하면,
+	// 이후 클라이언트에 대해 EPOLLOUT 이벤트가 발생할 때 handleIOEvent 함수의 마지막 if 문에 걸려 클라이언트가 해제되긴 한다.
+	// 대신 그때 전달할 메시지를 조금 더 넓은 범위에서 CGI_EXCEPTION_MESSAGE 등을 정의해 사용할 필요가 있다.
+	if (received < 0) {
+		target.setCGIErrorState();
+		return (disconnectPipe(epoll, fd));
+	}
+	// CGI 스크립트 프로세스 정상 종료 및 CGI 응답 수신 완료 시 파이프 해제 필요.
+	if (!received)
+		return (disconnectPipe(epoll, fd));
 	target.appendMessage(std::string(buffer, received));
 }
 
@@ -256,7 +276,7 @@ void Server::disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &p
 
 	while (waitpid(0, &status, WNOHANG) == 0);
 	if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
-		cgiClients[pipe]->setChildProcessErrorState();
+		cgiClients[pipe]->setCGIErrorState();
 	controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
 	cgiClients.erase(pipe);
 	close(pipe);

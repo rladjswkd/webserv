@@ -110,9 +110,9 @@ void Client::setDisconnectedState()
 	state = STATE_DISCONNECTED;
 }
 
-void Client::setChildProcessErrorState()
+void Client::setCGIErrorState()
 {
-	state = STATE_CHILD_PROCESS_ERROR;
+	state = STATE_CGI_ERROR;
 }
 
 bool Client::isDisconnected()
@@ -120,9 +120,9 @@ bool Client::isDisconnected()
 	return (state == STATE_DISCONNECTED);
 }
 
-bool Client::isChildProcessError()
+bool Client::isCGIError()
 {
-	return (state == STATE_CHILD_PROCESS_ERROR);
+	return (state == STATE_CGI_ERROR);
 }
 
 const Request &Client::getRequestObject()
