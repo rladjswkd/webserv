@@ -7,6 +7,7 @@
 #include "Config.hpp"
 #include "ConfigLocation.hpp"
 #include "MIMEType.hpp"
+#include "CGIData.hpp"
 #include <unistd.h>
 #include <dirent.h>
 #include <iostream>
@@ -41,12 +42,12 @@ class RequestHandler
         RequestHandler();
         static std::string createDirectoryListing(PathType path);
         static std::string getDirectoryList(PathType path);
-        static Response processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request);
+        static Response processLocation(CGIData &cgi, const ConfigLocation &location, Route route, const Request &request);
         static std::string readFileToString(const Path &filePath);
         static Response responseError(std::string statusCode, ErrorPageMap errorPage);
         static Response responseRedirect(std::vector<std::string> redirect);
         static Response responseRedirect(const std::string &statuscode, const std::string &location);
-        static Response responseIndex(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response responseIndex(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request &request);
         static bool     isAllowed(const ArgumentList  &limitExcept, const std::string method);
         static bool     isRequestBodyTooLarge(size_t clientMaxBodySize, size_t contentLength);
         static bool     isDirectoryPath(Path requestPath);
@@ -55,21 +56,21 @@ class RequestHandler
         static std::string getFileExtension(const Path path);
         static void     setAdditionalEnv(Path requestPath, const Request &request);
         static void     executeScript(int *pipefd, const Path requestPath, const Request &request);
-        static Response responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request);
+        static Response responseCGI(CGIData &cgi, const ConfigLocation &location, const Path requestPath, const Request &request);
         static Response responseFile(const  ConfigLocation &location, const Path requestPath, const Request &request);
         static bool     isDirectoryFile(const Path requestPath);
         static void     tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath);
         static bool     resolveRelativePath(Request &request);
         static Path     determinePath(const ConfigLocation &location, Route route, const Request &request);
-        static Response processPath(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
-        static Response processDirectory(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
-        static Response processFile(int &fd, const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response processPath(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response processDirectory(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request &request);
+        static Response processFile(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request &request);
 
 
 
     public:
         static  Response    responseError(std::string statusCode);
-        static  Response    processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request);
+        static  Response    processRequest(CGIData &cgi, const ConfigServer &server, Request &request);
 };
 
 #endif

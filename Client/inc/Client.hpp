@@ -46,6 +46,7 @@ private:
 	MessageBuffer	message;
 	Request			requestObj;
 	Response		responseObj;
+	pid_t				pid;
 
 private:
 	void		appendEssentialPart(const Message &newRead);
@@ -78,5 +79,8 @@ public:
 
 	bool				isKeepAlive();
 	void				reset();
+
+	void				setCGIPID(pid_t pid);
+	pid_t				getCGIPID();
 };
 #endif

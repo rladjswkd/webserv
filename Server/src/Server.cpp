@@ -183,7 +183,7 @@ void Server::receiveRequest(const FileDescriptor &epoll, const FileDescriptor &c
 void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe, Client &target)
 {
 	receiveCGIData(epoll, pipe, target);
-	// CGI 응답 대기 중 클라이언트ㄹ가 소켓 연결을 끊어 클라이언트 연결 정보가 사라졌지만, pipe 등 CGI 관련 정보는 살아있어 이벤트가 발생한 경우
+	// CGI 응답 대기 중 클라이언트가 소켓 연결을 끊어 클라이언트 연결 정보가 사라졌지만, pipe 등 CGI 관련 정보는 살아있어 이벤트가 발생한 경우
 	if (target.isDisconnected())
 		disconnectPipe(epoll, pipe);
 	if (target.isComplete())
@@ -196,17 +196,18 @@ void Server::receiveCGI(const FileDescriptor &epoll, const FileDescriptor &pipe,
 
 void Server::processRequest(const FileDescriptor &epoll, const FileDescriptor &client, Client &target)
 {
-	FileDescriptor	cgiPipe = 0;
+	CGIData cgi;
 
-	target.setResponseObject(RequestHandler::processRequest(cgiPipe, *(connection[client]), config, const_cast<Request &>(target.getRequestObject())));
-	if (cgiPipe == 0)
+	target.setResponseObject(RequestHandler::processRequest(cgi, config.getServer(*connection[client], target.getRequestObject().getHost()), const_cast<Request &>(target.getRequestObject())));
+	if (cgi.pipe == 0)
 		return (target.setResponseMessageBuffer(ResponseHandler::createResponseMessage(target.getResponseObject())));
-	if (cgiPipe == -1)
+	if (cgi.pipe == -1)
 		return (disconnect(epoll, client, PIPE_WRITE_EXCEPTION_MESSAGE));
-	fcntl(cgiPipe, F_SETFL, O_NONBLOCK); // Without this, cgiPipe must be blocking.
-	controlIOEvent(epoll, EPOLL_CTL_ADD, cgiPipe, EPOLLIN);
-	cgiClients[cgiPipe] = &target;
+	fcntl(cgi.pipe, F_SETFL, O_NONBLOCK); // Without this, cgi.pipe must be blocking.
+	controlIOEvent(epoll, EPOLL_CTL_ADD, cgi.pipe, EPOLLIN);
+	cgiClients[cgi.pipe] = &target;
 	target.setCGIState();
+	target.setCGIPID(cgi.pid);
 }
 
 void Server::sendData(const FileDescriptor &epoll, const FileDescriptor &client)
@@ -274,10 +275,17 @@ void Server::destructClients()
 void Server::disconnectPipe(const FileDescriptor &epoll, const FileDescriptor &pipe)
 {
 	int	status = 0;
+	Client *c = cgiClients[pipe];
 
-	while (waitpid(0, &status, WNOHANG) == 0);
+	// disconnectPipe()는 receiveCGI 하위에서만 호출된다.
+	// 즉, CGI 스크립트를 위한 프로세스가 정상적으로 생성되고 CGI 스크립트 실행 후 CGI 응답 수신 시작까지는 무조건 이뤄진 상태다.
+	// Client 객체 내에 CGI 스크립트 프로세스의 pid가 설정되었음을 보장할 수 있다.
+
+	// CGI 프로세스 존재 시 강제 종료
+	kill(c->getCGIPID(), SIGKILL);
+	while (waitpid(c->getCGIPID(), &status, WNOHANG) == 0);
 	if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
-		cgiClients[pipe]->setCGIErrorState();
+		c->setCGIErrorState();
 	controlIOEvent(epoll, EPOLL_CTL_DEL, pipe, EPOLLIN);
 	cgiClients.erase(pipe);
 	close(pipe);

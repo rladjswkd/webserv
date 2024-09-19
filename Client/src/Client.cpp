@@ -174,6 +174,16 @@ void Client::reset()
 	responseObj = Response();
 }
 
+void Client::setCGIPID(pid_t pid)
+{
+	this->pid = pid;
+}
+
+pid_t Client::getCGIPID()
+{
+	return pid;
+}
+
 Client::MessageBuffer::MessageBuffer(const std::string &response) : buffer(response), sent()
 {
 }
@@ -208,3 +218,4 @@ const std::string &Client::MessageBuffer::toString()
 {
 	return (buffer);
 }
+

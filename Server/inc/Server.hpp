@@ -9,6 +9,7 @@
 # include <sys/epoll.h>
 # include "Config.hpp"
 # include "Client.hpp"
+# include "CGIData.hpp"
 
 # define LOCALHOST_STR						"localhost"
 # define LOCALHOST_NUMERIC_STR				"127.0.0.1"

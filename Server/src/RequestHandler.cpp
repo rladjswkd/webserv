@@ -177,7 +177,7 @@ void    RequestHandler::executeScript(int *pipefd, const Path requestPath, const
     exit(1);
 }
 
-Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location, const Path requestPath, const Request &request){
+Response    RequestHandler::responseCGI(CGIData &cgi, const ConfigLocation &location, const Path requestPath, const Request &request){
     Response    response;
     pid_t       pid;
     int         pipefd[4];
@@ -192,13 +192,15 @@ Response    RequestHandler::responseCGI(int &fd, const ConfigLocation &location,
         throw (std::runtime_error(std::strerror(errno)));
     else if (pid == 0)
         executeScript(pipefd, requestPath, request);
-    fd = pipefd[R_PIPE_READ];
+    cgi.pipe = pipefd[R_PIPE_READ];
+		cgi.pid = pid;
     if (write(pipefd[W_PIPE_WRITE], requestBody.c_str(), requestBody.length()) == -1)
     {
-        fd = -1;
+        cgi.pipe = -1;
+				cgi.pid = 0;
         close(pipefd[R_PIPE_READ]);
         kill(pid, SIGKILL);
-        while (waitpid(0, 0, WNOHANG) == 0);
+        while (waitpid(pid, 0, WNOHANG) == 0);
     }
     close(pipefd[W_PIPE_WRITE]);
     close(pipefd[W_PIPE_READ]);
@@ -242,7 +244,7 @@ Response    RequestHandler::responseFile(const  ConfigLocation &location, const 
     return response;
 }
 
-Response    RequestHandler::processLocation(int &fd, const ConfigLocation &location, Route route, const Request &request){
+Response    RequestHandler::processLocation(CGIData &cgi, const ConfigLocation &location, Route route, const Request &request){
     Path        path;
     struct stat sb;
 
@@ -253,7 +255,7 @@ Response    RequestHandler::processLocation(int &fd, const ConfigLocation &locat
     path = determinePath(location, route, request);
     if (stat(path.c_str(), &sb) == -1)
         return (responseError("404", location.getErrorPage()));
-    return (processPath(fd, location, path, request));
+    return (processPath(cgi, location, path, request));
 }
 
 void   RequestHandler::tokenizeUriPath(std::vector<std::string> &tokens, Path uriPath){
@@ -308,7 +310,7 @@ RequestHandler::Path RequestHandler::determinePath(const ConfigLocation &locatio
     return (ROOT_PATH + request.getUriPath());
 }
 
-Response    RequestHandler::responseIndex(int &fd, const ConfigLocation location, const Path requestPath, const Request &request){
+Response    RequestHandler::responseIndex(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request &request){
     Path temp;
     std::vector<std::string>::const_iterator index;
     const std::vector<std::string> &indexList = location.getIndex();
@@ -317,7 +319,7 @@ Response    RequestHandler::responseIndex(int &fd, const ConfigLocation location
         temp = requestPath + *index;
         if (access(temp.c_str(), F_OK) == 0){
             if (isCGIPath(temp))
-                return responseCGI(fd, location, temp, request);
+                return responseCGI(cgi, location, temp, request);
             return responseFile(location, temp, request);
         }
     }
@@ -326,30 +328,29 @@ Response    RequestHandler::responseIndex(int &fd, const ConfigLocation location
     return responseError("403", location.getErrorPage());
 }
 
-Response RequestHandler::processPath(int &fd, const ConfigLocation location, const Path requestPath, const Request &request)
+Response RequestHandler::processPath(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request &request)
 {
     if (isDirectoryPath(requestPath))
-        return (processDirectory(fd, location, requestPath, request));
-    return (processFile(fd, location, requestPath, request));
+        return (processDirectory(cgi, location, requestPath, request));
+    return (processFile(cgi, location, requestPath, request));
 }
 
-Response RequestHandler::processDirectory(int & fd, const ConfigLocation location, const Path requestPath, const Request & request)
+Response RequestHandler::processDirectory(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request & request)
 {
     if (access(requestPath.c_str(), R_OK) == 0)
-        return (responseIndex(fd, location, requestPath, request));
+        return (responseIndex(cgi, location, requestPath, request));
     return (responseError("403", location.getErrorPage()));
 }
 
-Response RequestHandler::processFile(int & fd, const ConfigLocation location, const Path requestPath, const Request & request)
+Response RequestHandler::processFile(CGIData &cgi, const ConfigLocation location, const Path requestPath, const Request & request)
 {
     if (isCGIPath(requestPath))
-        return (responseCGI(fd, location, requestPath, request));
+        return (responseCGI(cgi, location, requestPath, request));
     return (responseFile(location, requestPath, request));
 }
 
 
-Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr, const Config &config, Request &request){
-    const ConfigServer              &server = config.getServer(socketaddr, request.getHost());
+Response    RequestHandler::processRequest(CGIData &cgi, const ConfigServer &server, Request &request){
     ConfigServer::const_iterator    locationIt;
     std::string                     errorCode;
 
@@ -365,5 +366,5 @@ Response    RequestHandler::processRequest(int &fd, const SocketAddr &socketaddr
         return responseError("404", server.getErrorPage());
     if (locationIt->second.hasRedirect())
         return responseRedirect(locationIt->second.getRedirect());
-    return processLocation(fd, locationIt->second, locationIt->first, request);
+    return processLocation(cgi, locationIt->second, locationIt->first, request);
 }
