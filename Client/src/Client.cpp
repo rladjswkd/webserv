@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <sstream>
 
-Client::Client() : state(STATE_REQUEST_FIELD_LINE), message(EMPTY_STRING)
+Client::Client() : state(STATE_REQUEST_HEAD), message(EMPTY_STRING)
 { }
 
 void Client::appendEssentialPart(const Message &newRead)
@@ -83,7 +83,7 @@ void Client::appendMessage(const Message &newRead)
 {
 	switch (state)
 	{
-		case STATE_REQUEST_FIELD_LINE:
+		case STATE_REQUEST_HEAD:
 			return (appendEssentialPart(newRead));
 		case STATE_REQUEST_CHUNKED:
 			return (appendChunked(newRead));
@@ -168,7 +168,7 @@ void Client::setResponseMessageBuffer(const Message &response)
 
 void Client::reset()
 {
-	state = STATE_REQUEST_FIELD_LINE;
+	state = STATE_REQUEST_HEAD;
 	message.clear();
 	requestObj = Request();
 	responseObj = Response();

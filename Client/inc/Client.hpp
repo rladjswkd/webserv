@@ -9,7 +9,7 @@
 
 # define CRLFCRLF							"\r\n\r\n"
 # define EMPTY_STRING						""
-# define STATE_REQUEST_FIELD_LINE			1
+# define STATE_REQUEST_HEAD			1
 # define STATE_REQUEST_CHUNKED				2
 # define STATE_REQUEST_CONTENT_LENGTH		4
 # define STATE_RESPONSE_CGI					8
