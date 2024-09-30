@@ -17,12 +17,18 @@
 void Server::generateServerSocket(const SocketAddr &socketAddr)
 {
 	struct addrinfo *result = getAvailableAddress(socketAddr);
-	const FileDescriptor socket = createSocket();
+	// const FileDescriptor socket = createSocket();
+	const FileDescriptor fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
-	doBind(socket, result);
-	doListen(socket, result);
+	if (fd < 0)
+	{
+		freeaddrinfo(result);
+		throw(std::runtime_error(std::strerror(errno)));
+	}
+	doBind(fd, result);
+	doListen(fd, result);
 	freeaddrinfo(result);
-	servers.insert(std::make_pair(socket, socketAddr));
+	servers.insert(std::make_pair(fd, socketAddr));
 }
 
 addrinfo *Server::getAvailableAddress(const SocketAddr &socketAddr)
@@ -55,14 +61,14 @@ void Server::doListen(const FileDescriptor socket, addrinfo *result)
 	throw(std::runtime_error(std::strerror(errno)));
 }
 
-Server::FileDescriptor Server::createSocket()
-{
-	FileDescriptor fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+// Server::FileDescriptor Server::createSocket()
+// {
+// 	FileDescriptor fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
-	if (fd < 0)
-		throw(std::runtime_error(std::strerror(errno))); // every server socket must be created.
-	return (fd);
-}
+// 	if (fd < 0)
+// 		throw(std::runtime_error(std::strerror(errno))); // every server socket must be created.
+// 	return (fd);
+// }
 
 addrinfo Server::createaddrHints()
 {
